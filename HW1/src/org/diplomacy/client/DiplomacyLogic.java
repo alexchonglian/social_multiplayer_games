@@ -1,6 +1,11 @@
 package org.diplomacy.client;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.diplomacy.client.GameApi.*;
 
 class Region {
@@ -39,8 +44,12 @@ class Region {
 		this.occupant = occupant;
 	}
 	
-	private void setAdjacentRegions(List<Region> adjacentRegions) {
+	void setAdjacentRegions(List<Region> adjacentRegions) {
 		this.adjacentRegions = adjacentRegions;
+	}
+	
+	public String toString() {
+		return this.alias;
 	}
 }
 
@@ -86,100 +95,18 @@ class Nation {
 	Nation(String name) {
 		this.name = name;
 		this.troops = new ArrayList<Troop>();
-		initializeTroops();
 	}
 	
 	String name = null;
 	
 	ArrayList<Troop> troops = null;
-	
-	void initializeTroops() {
-		switch(name){
-		case "Austria":
-			break;
-		case "England":
-			break;
-		case "Germany": 
-			break;
-		case "Turkey":
-			break;
-		case "Italy":
-			break;
-		case "Russia":
-			break;
-		case "France":
-			break;
-		default:
-			break;
-		}
-	}
-}
 
-class Austria extends Nation {
-
-	Austria(String name) {
-		super(name);
-		// TODO Auto-generated constructor stub
-	}
-}
-
-class Turkey extends Nation {
-
-	Turkey(String name) {
-		super(name);
-		// TODO Auto-generated constructor stub
-	}
-	
-}
-
-class Italy extends Nation {
-
-	Italy(String name) {
-		super(name);
-		// TODO Auto-generated constructor stub
-	}
-	
-}
-
-class France extends Nation {
-
-	France(String name) {
-		super(name);
-		// TODO Auto-generated constructor stub
-	}
-	
-}
-
-class England extends Nation {
-
-	England(String name) {
-		super(name);
-		// TODO Auto-generated constructor stub
-	}
-	
-}
-
-class Germany extends Nation {
-
-	Germany(String name) {
-		super(name);
-		// TODO Auto-generated constructor stub
-	}
-	
-}
-
-class Russia extends Nation {
-
-	Russia(String name) {
-		super(name);
-		// TODO Auto-generated constructor stub
-	}
-	
 }
 
 class Order {}
 class Retreat {}
 class Adjustment {}
+
 
 class Judge {}
 
@@ -187,26 +114,25 @@ class Judge {}
 
 public class DiplomacyLogic {
 	
-	List<Region> regions;
-	List<Region> seas;
-	List<Region> lands;
+	private static final String MOVEMENT = "MOVEMENT";
+	private static final String RESOLVE = "RESOLVE";
+	private static final String RETREAT = "RETREAT";
+	private static final String ADJUSTMENT = "ADJUSTMENT";
 	
-	Map<String, Region> regionHash;
+	private static final String SPRING = "SPRING";
+	private static final String FALL = "FALL";
+	private static final String YEAR = "year";
 	
-	Map<String, Object> connectivityPatternInStr;
+	// Disclose orders only after everyone submitted
+	private static final String Austria_Submitted = "Austria_Submitted";
+	private static final String Turkey_Submitted = "Turkey_Submitted";
+	private static final String Italy_Submitted = "Italy_Submitted";
+	private static final String France_Submitted = "France_Submitted";
+	private static final String England_Submitted = "England_Submitted";
+	private static final String Germany_Submitted = "Germany_Submitted";
+	private static final String Russia_Submitted = "Russia_Submitted";
 	
-	Nation[] nations;
-	
-	Nation austria;
-	Nation turkey;
-	Nation italy;
-	Nation france;
-	Nation england;
-	Nation germany;
-	Nation russia;
-	
-	
-	
+	// will instantiate them in constructor
 	Region NAO, IRI, ENG, MAO, WES, 
 	LYO, TYS, ION, ADR, AEG, 
 	BLA, EAS, BAL, BOT, SKA, 
@@ -223,7 +149,22 @@ public class DiplomacyLogic {
 	Sev, Ukr, War, Lvn, Mos, 
 	Stp, Fin, Nwy, Swe, Den;
 	
-	Region[][][] connectivityPatternIn3dArray = {//75 x {{Region}, {neighbors}}
+	List<Region> regions;
+	List<Region> seas;
+	List<Region> lands;
+	
+	
+	// useful hash to make query faster
+	Map<String, Region> regionHash;
+	Map<String, List<String>> connectivityInStr;
+	Map<Region, List<Region>> connectivityInObj;
+	
+	Region findRegionObject(String alias) {
+		return regionHash.get(alias);
+	}
+	
+	// original data that indicates region adjacency
+	Region[][][] connectivityIn3dArray = {//75 x {{Region}, {neighbors}}
 			{
 			{NAO}, {NWG, Cly, Lvp, IRI, MAO
 			}},
@@ -525,6 +466,18 @@ public class DiplomacyLogic {
 			}}
 		};
 	
+
+	Nation[] nations;
+	
+	// will instantiate them in constructor
+	Nation austria;
+	Nation turkey;
+	Nation italy;
+	Nation france;
+	Nation england;
+	Nation germany;
+	Nation russia;
+	
 	public DiplomacyLogic() {
 		this.createRegions(); //create 75 Region as instance variables
 		this.addRegions(); // add reference to regions[]
@@ -532,8 +485,6 @@ public class DiplomacyLogic {
 		this.addLands(); //add reference to lands[]
 		this.regionHash = this.createRegionHash();
 	}
-
-
 
 	private void createRegions() {
 		// Regions as instance variable in DiplomacyLogic
@@ -667,7 +618,7 @@ public class DiplomacyLogic {
 	}
 	
 	private Map<String, Region> createRegionHash() {
-		
+		// {"Par":Region("Paris")}
 		HashMap<String, Region> tempRegionHash = new HashMap<String, Region>();
 		
 		for (Region r: this.regions) {
@@ -678,24 +629,42 @@ public class DiplomacyLogic {
 	}
 	
 	private void createAdjacencyMap() {
-
-		for(int i=0; i < this.regions.size(); i++) {
-			//add adjacent Regions to their list
+		// connectivityIn3dArray = 75 x {{Region}, {neighbors}}
+		for (int i=0; i < this.connectivityIn3dArray.length; i++) {
+			
+			Region currentRegion = connectivityIn3dArray[i][0][0];
+			Region[] neighbors = connectivityIn3dArray[i][1];
+			
+			ArrayList<Region> neighborsArrayList = 
+					new ArrayList<Region>(Arrays.asList(neighbors));
+			currentRegion.setAdjacentRegions(neighborsArrayList);
+			
+			// save to connectivityInObj
+			connectivityInObj.put(currentRegion, neighborsArrayList);
+			
+			// save to connectivityInStr
+			List<String> neighborListString = new ArrayList<String>();
+			for (int j=0; j<neighbors.length; j++) {
+				neighborListString.add(neighbors[j].alias);
+			}
+			connectivityInStr.put(currentRegion.alias, neighborListString);
+			
 		}
 		
 	}
 	
 	private Nation[] createNations() {
+		
+		austria = new Nation("Austria");
+		turkey = new Nation("Turkey");
+		italy = new Nation("Italy");
+		france = new Nation("France");
+		england = new Nation("England");
+		germany = new Nation("Germany");
+		russia = new Nation("Russian");
+		
 		Nation[] nations = {
-			// I will change data structure if needed
-			// I will abstract it out to a new method if needed
-			new Nation("Austria"),
-			new Nation("Turkey"),
-			new Nation("Italy"),
-			new Nation("France"),
-			new Nation("England"),
-			new Nation("Germany"),
-			new Nation("Russia")
+				austria, turkey, italy, france, england, germany, russia
 		};
 		return nations;
 	}
@@ -734,7 +703,6 @@ public class DiplomacyLogic {
 		System.out.println(d.countLand());
 		System.out.println(d.countSea());
 		System.out.println(d.countSourceCenter());
-		
  	}
 }
 

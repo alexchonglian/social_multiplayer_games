@@ -5,7 +5,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import org.diplomacy.client.GameApi.*;
+import org.diplomacy.client.GameApi.GameReady;
+import org.diplomacy.client.GameApi.UpdateUI;
+import org.diplomacy.client.GameApi.MakeMove;
+import org.diplomacy.client.GameApi.VerifyMove;
+import org.diplomacy.client.GameApi.VerifyMoveDone;
+import org.diplomacy.client.GameApi.Operation;
+import org.diplomacy.client.GameApi.Set;
+import org.diplomacy.client.GameApi.EndGame;
+import org.diplomacy.client.GameApi.ManipulateState;
+import org.diplomacy.client.GameApi.ManipulationDone;
+import org.diplomacy.client.GameApi.Delete;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -68,10 +78,7 @@ public class DiplomacyLogicTest {
 	 * 2. Army and Fleet can move accordingly.
 	 * 
 	 * 		move is valid or not (hold, attack, support, convoy)
-	 * 
 	 */
-	
-	
 	
 	
 	/* 
@@ -283,9 +290,22 @@ public class DiplomacyLogicTest {
 	/*	
 	 * Part Two: [Make sure users interact in the way I expected ]
 	 * 
-	 * 1. Orders are not revealed until all submitted
+	 * Mechanism of order submission: 
 	 * 
-	 * 		!!! I need to come up with a mechanism to support this op
+	 * 7 players submitted order and claimed that they submitted
+	 * 		>>> set {myOrder: {actions}, visibleTo: me}
+	 * 		>>> set me_submitted = true
+	 * 
+	 * if they submitted they can not make any change. UI will disable submit button.
+	 * 		>>> $('input:submit').click(function(){	$(this).attr("disabled", true);});
+	 * 
+	 * when all submitted then reveal and update states
+	 * 		>>> if (7 nations claimed submission) {setVisibilityToALL}
+	 * 
+	 * submitting blank order is treated as a pass
+	 * 
+	 * 1. Orders are not revealed until all submitted
+	 * 		
 	 *  	
 	 * 2. Can jump to next stage
 	 * 		
