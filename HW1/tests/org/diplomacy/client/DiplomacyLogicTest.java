@@ -55,15 +55,13 @@ public class DiplomacyLogicTest {
 
 	
 	/* 
-	 * Alright, Let's jump into the test
-	 * 
-	 * [Make sure the initial configuration is right, no behavior up to that point]
+	 * Part One: [Make sure the initial configuration is right, no behavior]
 	 * 
 	 * 1. Map is loaded correctly.
 	 * 
-	 * 		Number of regions, seas, lands, sourcecenters
+	 * 		Number of regions, seas, lands, source centers
 	 * 
-	 * 		Troops from different nation on correct position
+	 * 		Troops from different nations are initially deployed on correct positions
 	 * 
 	 * 		The connectivity is right (but we can't cover everything)
 	 *  	
@@ -74,6 +72,11 @@ public class DiplomacyLogicTest {
 	 */
 	
 	
+	
+	
+	/* 
+	 * Test region counts
+	 */
 	@Test
 	public void test56Land() {
 		//56 lands on map
@@ -92,56 +95,137 @@ public class DiplomacyLogicTest {
 		assertEquals(34, diplomacyLogic.countSourceCenter());
 	}
 	
+	
+	
+	/* 
+	 * Test initial troop deployment
+	 */
 	@Test
 	public void testTroopsOfAustriaAssignedOnMap() {
-		//Austria has their troops on the right position?
-		ArrayList<Troop> AustrianTroop = diplomacyLogic.austria.troops;
-		HashSet<Troop> setAustrianTroop = new HashSet();
-		assertEquals(0, 1);
+		//Austria has their troops on the right position?	
+		//Army in Vienna
+		assertEquals(diplomacyLogic.Vie.occupant.nationality, diplomacyLogic.austria);
+		assertEquals(diplomacyLogic.Vie.occupant.type, "A");
+		
+		//Army in Budapest
+		assertEquals(diplomacyLogic.Bud.occupant.nationality, diplomacyLogic.austria);
+		assertEquals(diplomacyLogic.Bud.occupant.type, "A");
+		
+		//Fleet in Trieste
+		assertEquals(diplomacyLogic.Tri.occupant.nationality, diplomacyLogic.austria);
+		assertEquals(diplomacyLogic.Tri.occupant.type, "F");
 	}
 	
 	@Test
 	public void testTroopsOfTurkeyAssignedOnMap() {
 		//Turkey has their troops on the right position?
-		ArrayList<Troop> AustrianTroop = diplomacyLogic.austria.troops;
-		HashSet<Troop> setAustrianTroop = new HashSet();
-		assertEquals(0, 1);
+		//Army in Consta
+		assertEquals(diplomacyLogic.Con.occupant.nationality, diplomacyLogic.turkey);
+		assertEquals(diplomacyLogic.Con.occupant.type, "A");
+		
+		//Army in Ankara
+		assertEquals(diplomacyLogic.Bud.occupant.nationality, diplomacyLogic.turkey);
+		assertEquals(diplomacyLogic.Bud.occupant.type, "F");
+		
+		//Army in Smy
+		assertEquals(diplomacyLogic.Smy.occupant.nationality, diplomacyLogic.turkey);
+		assertEquals(diplomacyLogic.Smy.occupant.type, "A");
 	}
 	
 	@Test
 	public void testTroopsOfItalyAssignedOnMap() {
 		//Italy has their troops on the right position?
-		ArrayList<Troop> AustrianTroop = diplomacyLogic.Austria.troops;
-		assertEquals(0, 1);
+		//Army in Venice
+		assertEquals(diplomacyLogic.Ven.occupant.nationality, diplomacyLogic.italy);
+		assertEquals(diplomacyLogic.Ven.occupant.type, "A");
+		
+		//Army in Rome
+		assertEquals(diplomacyLogic.Rom.occupant.nationality, diplomacyLogic.italy);
+		assertEquals(diplomacyLogic.Rom.occupant.type, "A");
+		
+		//Fleet in Napolis
+		assertEquals(diplomacyLogic.Nap.occupant.nationality, diplomacyLogic.italy);
+		assertEquals(diplomacyLogic.Nap.occupant.type, "F");
 	}
 	
 	@Test
 	public void testTroopsOfFranceAssignedOnMap() {
 		//France has their troops on the right position?
-		assertEquals(0, 1);
+		//Army in Paris
+		assertEquals(diplomacyLogic.Par.occupant.nationality, diplomacyLogic.france);
+		assertEquals(diplomacyLogic.Par.occupant.type, "A");
+		
+		//Army in Marsellia
+		assertEquals(diplomacyLogic.Mar.occupant.nationality, diplomacyLogic.france);
+		assertEquals(diplomacyLogic.Mar.occupant.type, "A");
+		
+		//Fleet in Brest
+		assertEquals(diplomacyLogic.Bre.occupant.nationality, diplomacyLogic.france);
+		assertEquals(diplomacyLogic.Bre.occupant.type, "F");
 	}
 	
 	@Test
 	public void testTroopsOfEnglandAssignedOnMap() {
 		//England has their troops on the right position?
-		assertEquals(0, 1);
+		//Army in Liverpool
+		assertEquals(diplomacyLogic.Lvp.occupant.nationality, diplomacyLogic.england);
+		assertEquals(diplomacyLogic.Lvp.occupant.type, "A");
+		
+		//Fleet in Edinburg
+		assertEquals(diplomacyLogic.Edi.occupant.nationality, diplomacyLogic.england);
+		assertEquals(diplomacyLogic.Edi.occupant.type, "F");
+		
+		//Fleet in London
+		assertEquals(diplomacyLogic.Lon.occupant.nationality, diplomacyLogic.england);
+		assertEquals(diplomacyLogic.Lon.occupant.type, "F");
 	}
 	
 	@Test
 	public void testTroopsOfGermanyAssignedOnMap() {
 		//Germany has their troops on the right position?
-		assertEquals(0, 1);
+		//Army in Munich
+		assertEquals(diplomacyLogic.Mun.occupant.nationality, diplomacyLogic.germany);
+		assertEquals(diplomacyLogic.Mun.occupant.type, "A");
+		
+		//Army in Berlin
+		assertEquals(diplomacyLogic.Ber.occupant.nationality, diplomacyLogic.germany);
+		assertEquals(diplomacyLogic.Ber.occupant.type, "A");
+		
+		//Fleet in Kiel
+		assertEquals(diplomacyLogic.Kie.occupant.nationality, diplomacyLogic.germany);
+		assertEquals(diplomacyLogic.Kie.occupant.type, "F");
 	}
 	
 	@Test
 	public void testTroopsOfRussiaAssignedOnMap() {
-		//Russian has their troops on the right position?
-		assertEquals(0, 1);
+		//Russia has their troops on the right position?
+		//Army in Moscow
+		assertEquals(diplomacyLogic.Mos.occupant.nationality, diplomacyLogic.russia);
+		assertEquals(diplomacyLogic.Mos.occupant.type, "A");
+		
+		//Army in Warsaw
+		assertEquals(diplomacyLogic.War.occupant.nationality, diplomacyLogic.russia);
+		assertEquals(diplomacyLogic.War.occupant.type, "A");
+		
+		//Fleet in Saint Petersberg
+		assertEquals(diplomacyLogic.Stp.occupant.nationality, diplomacyLogic.russia);
+		assertEquals(diplomacyLogic.Stp.occupant.type, "F");
+		
+		//Fleet in Sevastopol
+		assertEquals(diplomacyLogic.Sev.occupant.nationality, diplomacyLogic.russia);
+		assertEquals(diplomacyLogic.Sev.occupant.type, "F");
 	}
 	
+	
+	
+	/* 
+	 * Test initial troop deployment
+	 */
 	@Test
 	public void testPicardyAdjacentToBelgium() {
 		//Picardy and Belgium are adjacent
+		ArrayList<Troop> AustrianTroop = diplomacyLogic.austria.troops;
+		HashSet<Troop> setAustrianTroop = new HashSet();
 		assertEquals(0, 1);
 	}
 	
@@ -197,19 +281,19 @@ public class DiplomacyLogicTest {
 	
 	
 	/*	
-	 * [Make sure users interact in the way I expected ]
+	 * Part Two: [Make sure users interact in the way I expected ]
 	 * 
-	 * 1. Map is loaded correctly.
+	 * 1. Orders are not revealed until all submitted
 	 * 
-	 * 		Number of regions, seas, lands, sourcecenters
-	 * 
-	 * 		Troops from different nation on correct position
-	 * 
-	 * 		The connectivity is right (but we can't cover everything)
+	 * 		!!! I need to come up with a mechanism to support this op
 	 *  	
-	 * 2. Orders are judged correctly
+	 * 2. Can jump to next stage
+	 * 		
+	 * 		Year: 1900 => 1901 => 1902
 	 * 
-	 * 		move is valid or not (hold, attack, support, convoy)
+	 * 		Season: Spring => Fall
+	 * 
+	 * 		Stage: Movement => Resolve => Retreat => Adjustment
 	 * 
 	 */
 	
@@ -380,7 +464,10 @@ public class DiplomacyLogicTest {
 	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
 	    assertEquals(verifyMove.getLastMovePlayerId(), verifyDone.getHackerPlayerId());
 	}
-
+	
+	
+	// keep it, may be useful later
+	
 	private static final String PLAYER_ID = "playerId";
 	/*
 	 * The entries used in the cheat game are: turn:W/B, isCheater:yes, W, B, M,
