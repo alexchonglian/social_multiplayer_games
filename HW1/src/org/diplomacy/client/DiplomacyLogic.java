@@ -11,7 +11,7 @@ class Region {
 	String alias;
 	int type;
 	boolean isSourceCenter;
-	Troop holder;
+	Troop occupant;
 	List<Region> adjacentRegions;
 	
 	public boolean isSea() {
@@ -30,13 +30,13 @@ class Region {
 		this.isSourceCenter = isSourceCenter;
 	}
 
-	public Region(String name, String alias, int type, boolean isSourceCenter, Troop holder) {
+	public Region(String name, String alias, int type, boolean isSourceCenter, Troop occupant) {
 		super();
 		this.name = name;
 		this.alias = alias;
 		this.type = type;
 		this.isSourceCenter = isSourceCenter;
-		this.holder = holder;
+		this.occupant = occupant;
 	}
 	
 	private void setAdjacentRegions(List<Region> adjacentRegions) {
@@ -58,11 +58,13 @@ class Convoy {}
 
 
 class Troop {
-	Nation nation;
+	String type;
+	Nation nationality;
 	Region on;
 }
 
 class Army extends Troop {
+	String type = "A";
 	Army() {}
 	void hold() {return;}
 	void move() {return;}
@@ -70,6 +72,7 @@ class Army extends Troop {
 }
 
 class Fleet extends Troop {
+	String type = "F";
 	Fleet() {}
 	Hold hold() {return new Hold();}
 	void move() {return;}
@@ -197,6 +200,10 @@ public class DiplomacyLogic {
 	Nation austria;
 	Nation turkey;
 	Nation italy;
+	Nation france;
+	Nation england;
+	Nation germany;
+	Nation russia;
 	
 	
 	
