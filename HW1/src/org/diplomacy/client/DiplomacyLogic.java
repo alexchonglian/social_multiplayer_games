@@ -3,7 +3,6 @@ package org.diplomacy.client;
 import java.util.*;
 import org.diplomacy.client.GameApi.*;
 
-
 class Region {
 	public final static int SEA = 0;
 	public final static int LAND = 1;
@@ -79,6 +78,7 @@ class Fleet extends Troop {
 }
 
 class Nation {
+	enum name {}
 	
 	Nation(String name) {
 		this.name = name;
@@ -92,9 +92,9 @@ class Nation {
 	
 	void initializeTroops() {
 		switch(name){
-		case "Austria": //create Troops based on number of Army and Fleet
+		case "Austria":
 			break;
-		case "England": // similar stuff
+		case "England":
 			break;
 		case "Germany": 
 			break;
@@ -189,9 +189,16 @@ public class DiplomacyLogic {
 	List<Region> lands;
 	
 	Map<String, Region> regionHash;
-	Map<String, Object> connectivity;
+	
+	Map<String, Object> connectivityPatternInStr;
 	
 	Nation[] nations;
+	
+	Nation austria;
+	Nation turkey;
+	Nation italy;
+	
+	
 	
 	Region NAO, IRI, ENG, MAO, WES, 
 	LYO, TYS, ION, ADR, AEG, 
@@ -209,162 +216,7 @@ public class DiplomacyLogic {
 	Sev, Ukr, War, Lvn, Mos, 
 	Stp, Fin, Nwy, Swe, Den;
 	
-
-	
-	public DiplomacyLogic() {
-		this.createRegions(); //create 75 Region as instance variables
-		this.addRegions(); // add reference to regions[]
-		this.addSeas(); //add reference to seas[]
-		this.addLands(); //add reference to lands[]
-		this.regionHash = this.createRegionHash();
-	}
-
-
-
-	private void createRegions() {
-		// Regions as instance variable in DiplomacyLogic
-		// create 19 seas
-		NAO = new Region("North Atlantic", "NAO", 0, false);
-		IRI = new Region("Irish Sea", "IRI", 0, false);
-		ENG = new Region("English Channel","ENG", 0, false);
-		MAO = new Region("Mid Atlantic","MAO", 0, false);
-		WES = new Region("West Med.","WES", 0, false);
-		LYO = new Region("Gulf of Lyon", "LYO",0, false);
-		TYS = new Region("Tyrbennian Sea", "TYS", 0, false);
-		ION = new Region("Ionian Sea", "ION", 0, false);
-		ADR = new Region("Adriatic Sea", "ADR", 0, false);
-		AEG = new Region("Aegean Sea", "AEG", 0, false);
-		BLA = new Region("Black Sea", "BLA", 0, false);
-		EAS = new Region("East Med.", "EAS", 0, false);
-		BAL = new Region("Baltic Sea", "BAL", 0, false);
-		BOT = new Region("Gulf of Bothnia", "BOT", 0, false);
-		SKA = new Region("Skagerrak", "SKA", 0, false);
-		NTH = new Region("North Sea", "NTH", 0, false);
-		HEL = new Region("Helgoland Bight", "HEL", 0, false);
-		NWG = new Region("Norwegian Sea", "NWG", 0, false);
-		BAR = new Region("Barents Sea", "BAR", 0, false);
-		
-		//create 56 lands
-		Cly = new Region("Clyde", "Cly", 1, false);
-		Edi = new Region("Edinburge", "Edi", 1, true);
-		Yor = new Region("York", "Yor", 1, false);
-		Lon = new Region("London", "Lon", 1, true);
-		Lvp = new Region("Liverpool", "Lvp", 1, true);
-		Wal = new Region("Wales", "Wal", 1, false);
-		Bre = new Region("Brest", "Bre", 1, true);
-		Gas = new Region("Gascomy", "Gas", 1, false);
-		Mar = new Region("Marseilles", "Mar", 1, true);
-		Pic = new Region("Picardy", "Pic", 1, false);
-		Par = new Region("Paris", "Par", 1, true);
-		Bur = new Region("Burgundy", "Bur", 1, false);
-		Por = new Region("Portugal", "Por", 1, true);
-		Spa = new Region("Spain", "Spa", 1, true);
-		Naf = new Region("North Africa", "Naf", 1, false);
-		Tun = new Region("Tunis", "Tun", 1, true);
-		Nap = new Region("Naples", "Nap", 1, true);
-		Rom = new Region("Rome", "Rom", 1, true);
-		Tus = new Region("Tuscany", "Tus", 1, false);
-		Apu = new Region("Apulia", "Apu", 1, false);
-		Ven = new Region("Venice", "Ven", 1, true);
-		Pie = new Region("Piemonte", "Pie", 1, false);
-		Bel = new Region("Belgium", "Bel", 1, true);
-		Hol = new Region("Holland", "Hol", 1, true);
-		Ruh = new Region("Ruhr", "Ruh", 1, false);
-		Mun = new Region("Munich", "Mun", 1, false);
-		Kie = new Region("Kiel", "Kie", 1, true);
-		Ber = new Region("Berlin", "Ber", 1, true);
-		Sil = new Region("Silesia", "Sil", 1, false);
-		Pru = new Region("Prussia", "Pru", 1, false);
-		Tyr = new Region("Tyrolia", "Tyr", 1, false);
-		Tri = new Region("Trieste", "Tri", 1, true);
-		Vie = new Region("Vienna", "Vie", 1, true);
-		Boh = new Region("Bohemia", "Boh", 1, false);
-		Gal = new Region("Galicia", "Gal", 1, false);
-		Bud = new Region("Budapest", "Bud", 1, true);
-		Ser = new Region("Serbia", "Ser", 1, true);
-		Alb = new Region("Albania", "Alb", 1, false);
-		Gre = new Region("Greece", "Gre", 1, true);
-		Bul = new Region("Bulgaria", "Bul", 1, true);
-		Rum = new Region("Rumania", "Rum", 1, true);
-		Con = new Region("Constantinople", "Con", 1, true);
-		Ank = new Region("Ankara", "Ank", 1, true);
-		Smy = new Region("Smyrna", "Smy", 1, true);
-		Syr = new Region("Syria", "Syr", 1, false);
-		Arm = new Region("Armenia", "Arm", 1, false);
-		Sev = new Region("Sevastopol", "Sev", 1, true);
-		Ukr = new Region("Ukraine", "Ukr", 1, false);
-		War = new Region("Warsaw", "War", 1, true);
-		Lvn = new Region("Livonia", "Lvn", 1, false);
-		Mos = new Region("Moscow", "Mos", 1, true);
-		Stp = new Region("Saint Petersburg", "Stp", 1, true);
-		Fin = new Region("Finland", "Fin", 1, false);
-		Nwy = new Region("Norway", "Nwy", 1, true);
-		Swe = new Region("Sweden", "Swe", 1, true);
-		Den = new Region("Denmark", "Den", 1, true);
-		
-	}
-
-	private void addRegions() {
-		Region[] allRegions = {
-			NAO, IRI, ENG, MAO, WES, 
-			LYO, TYS, ION, ADR, AEG, 
-			BLA, EAS, BAL, BOT, SKA, 
-			NTH, HEL, NWG, BAR, Cly, 
-			Edi, Yor, Lon, Lvp, Wal, 
-			Bre, Gas, Mar, Pic, Par, 
-			Bur, Por, Spa, Naf, Tun, 
-			Nap, Rom, Tus, Apu, Ven, 
-			Pie, Bel, Hol, Ruh, Mun, 
-			Kie, Ber, Sil, Pru, Tyr, 
-			Tri, Vie, Boh, Gal, Bud, 
-			Ser, Alb, Gre, Bul, Rum, 
-			Con, Ank, Smy, Syr, Arm, 
-			Sev, Ukr, War, Lvn, Mos, 
-			Stp, Fin, Nwy, Swe, Den
-		};
-		this.regions = new ArrayList<Region>(Arrays.asList(allRegions));
-	}
-	
-	private void addSeas() {
-		Region[] allSeas = {
-			NAO, IRI, ENG, MAO, WES, 
-			LYO, TYS, ION, ADR, AEG, 
-			BLA, EAS, BAL, BOT, SKA, 
-			NTH, HEL, NWG, BAR
-		};
-		this.seas = new ArrayList<Region>(Arrays.asList(allSeas));
-	}
-	
-	private void addLands() {
-		Region[] allLands = {Cly, 
-			Edi, Yor, Lon, Lvp, Wal, 
-			Bre, Gas, Mar, Pic, Par, 
-			Bur, Por, Spa, Naf, Tun, 
-			Nap, Rom, Tus, Apu, Ven, 
-			Pie, Bel, Hol, Ruh, Mun, 
-			Kie, Ber, Sil, Pru, Tyr, 
-			Tri, Vie, Boh, Gal, Bud, 
-			Ser, Alb, Gre, Bul, Rum, 
-			Con, Ank, Smy, Syr, Arm, 
-			Sev, Ukr, War, Lvn, Mos, 
-			Stp, Fin, Nwy, Swe, Den
-		};
-		this.lands = new ArrayList<Region>(Arrays.asList(allLands));
-	}
-	
-	private Map<String, Region> createRegionHash() {
-		
-		HashMap<String, Region> tempRegionHash = new HashMap<String, Region>();
-		
-		for (Region r: this.regions) {
-			tempRegionHash.put(r.alias, r);
-		}
-		
-		return tempRegionHash;
-	}
-	
-	private void createAdjacencyMap() {
-		Region[][][] connectivityPatternIn3dArray = {//75 x 2
+	Region[][][] connectivityPatternIn3dArray = {//75 x {{Region}, {neighbors}}
 			{
 			{NAO}, {NWG, Cly, Lvp, IRI, MAO
 			}},
@@ -665,6 +517,161 @@ public class DiplomacyLogic {
 			{Den}, {HEL, NTH, SKA, BAL, Kie
 			}}
 		};
+	
+	public DiplomacyLogic() {
+		this.createRegions(); //create 75 Region as instance variables
+		this.addRegions(); // add reference to regions[]
+		this.addSeas(); //add reference to seas[]
+		this.addLands(); //add reference to lands[]
+		this.regionHash = this.createRegionHash();
+	}
+
+
+
+	private void createRegions() {
+		// Regions as instance variable in DiplomacyLogic
+		// create 19 seas
+		NAO = new Region("North Atlantic", "NAO", 0, false);
+		IRI = new Region("Irish Sea", "IRI", 0, false);
+		ENG = new Region("English Channel","ENG", 0, false);
+		MAO = new Region("Mid Atlantic","MAO", 0, false);
+		WES = new Region("West Med.","WES", 0, false);
+		LYO = new Region("Gulf of Lyon", "LYO",0, false);
+		TYS = new Region("Tyrbennian Sea", "TYS", 0, false);
+		ION = new Region("Ionian Sea", "ION", 0, false);
+		ADR = new Region("Adriatic Sea", "ADR", 0, false);
+		AEG = new Region("Aegean Sea", "AEG", 0, false);
+		BLA = new Region("Black Sea", "BLA", 0, false);
+		EAS = new Region("East Med.", "EAS", 0, false);
+		BAL = new Region("Baltic Sea", "BAL", 0, false);
+		BOT = new Region("Gulf of Bothnia", "BOT", 0, false);
+		SKA = new Region("Skagerrak", "SKA", 0, false);
+		NTH = new Region("North Sea", "NTH", 0, false);
+		HEL = new Region("Helgoland Bight", "HEL", 0, false);
+		NWG = new Region("Norwegian Sea", "NWG", 0, false);
+		BAR = new Region("Barents Sea", "BAR", 0, false);
+		
+		//create 56 lands
+		Cly = new Region("Clyde", "Cly", 1, false);
+		Edi = new Region("Edinburge", "Edi", 1, true);
+		Yor = new Region("York", "Yor", 1, false);
+		Lon = new Region("London", "Lon", 1, true);
+		Lvp = new Region("Liverpool", "Lvp", 1, true);
+		Wal = new Region("Wales", "Wal", 1, false);
+		Bre = new Region("Brest", "Bre", 1, true);
+		Gas = new Region("Gascomy", "Gas", 1, false);
+		Mar = new Region("Marseilles", "Mar", 1, true);
+		Pic = new Region("Picardy", "Pic", 1, false);
+		Par = new Region("Paris", "Par", 1, true);
+		Bur = new Region("Burgundy", "Bur", 1, false);
+		Por = new Region("Portugal", "Por", 1, true);
+		Spa = new Region("Spain", "Spa", 1, true);
+		Naf = new Region("North Africa", "Naf", 1, false);
+		Tun = new Region("Tunis", "Tun", 1, true);
+		Nap = new Region("Naples", "Nap", 1, true);
+		Rom = new Region("Rome", "Rom", 1, true);
+		Tus = new Region("Tuscany", "Tus", 1, false);
+		Apu = new Region("Apulia", "Apu", 1, false);
+		Ven = new Region("Venice", "Ven", 1, true);
+		Pie = new Region("Piemonte", "Pie", 1, false);
+		Bel = new Region("Belgium", "Bel", 1, true);
+		Hol = new Region("Holland", "Hol", 1, true);
+		Ruh = new Region("Ruhr", "Ruh", 1, false);
+		Mun = new Region("Munich", "Mun", 1, true);
+		Kie = new Region("Kiel", "Kie", 1, true);
+		Ber = new Region("Berlin", "Ber", 1, true);
+		Sil = new Region("Silesia", "Sil", 1, false);
+		Pru = new Region("Prussia", "Pru", 1, false);
+		Tyr = new Region("Tyrolia", "Tyr", 1, false);
+		Tri = new Region("Trieste", "Tri", 1, true);
+		Vie = new Region("Vienna", "Vie", 1, true);
+		Boh = new Region("Bohemia", "Boh", 1, false);
+		Gal = new Region("Galicia", "Gal", 1, false);
+		Bud = new Region("Budapest", "Bud", 1, true);
+		Ser = new Region("Serbia", "Ser", 1, true);
+		Alb = new Region("Albania", "Alb", 1, false);
+		Gre = new Region("Greece", "Gre", 1, true);
+		Bul = new Region("Bulgaria", "Bul", 1, true);
+		Rum = new Region("Rumania", "Rum", 1, true);
+		Con = new Region("Constantinople", "Con", 1, true);
+		Ank = new Region("Ankara", "Ank", 1, true);
+		Smy = new Region("Smyrna", "Smy", 1, true);
+		Syr = new Region("Syria", "Syr", 1, false);
+		Arm = new Region("Armenia", "Arm", 1, false);
+		Sev = new Region("Sevastopol", "Sev", 1, true);
+		Ukr = new Region("Ukraine", "Ukr", 1, false);
+		War = new Region("Warsaw", "War", 1, true);
+		Lvn = new Region("Livonia", "Lvn", 1, false);
+		Mos = new Region("Moscow", "Mos", 1, true);
+		Stp = new Region("Saint Petersburg", "Stp", 1, true);
+		Fin = new Region("Finland", "Fin", 1, false);
+		Nwy = new Region("Norway", "Nwy", 1, true);
+		Swe = new Region("Sweden", "Swe", 1, true);
+		Den = new Region("Denmark", "Den", 1, true);
+		
+	}
+
+	private void addRegions() {
+		Region[] allRegions = {
+			NAO, IRI, ENG, MAO, WES, 
+			LYO, TYS, ION, ADR, AEG, 
+			BLA, EAS, BAL, BOT, SKA, 
+			NTH, HEL, NWG, BAR, Cly, 
+			Edi, Yor, Lon, Lvp, Wal, 
+			Bre, Gas, Mar, Pic, Par, 
+			Bur, Por, Spa, Naf, Tun, 
+			Nap, Rom, Tus, Apu, Ven, 
+			Pie, Bel, Hol, Ruh, Mun, 
+			Kie, Ber, Sil, Pru, Tyr, 
+			Tri, Vie, Boh, Gal, Bud, 
+			Ser, Alb, Gre, Bul, Rum, 
+			Con, Ank, Smy, Syr, Arm, 
+			Sev, Ukr, War, Lvn, Mos, 
+			Stp, Fin, Nwy, Swe, Den
+		};
+		this.regions = new ArrayList<Region>(Arrays.asList(allRegions));
+	}
+	
+	private void addSeas() {
+		Region[] allSeas = {
+			NAO, IRI, ENG, MAO, WES, 
+			LYO, TYS, ION, ADR, AEG, 
+			BLA, EAS, BAL, BOT, SKA, 
+			NTH, HEL, NWG, BAR
+		};
+		this.seas = new ArrayList<Region>(Arrays.asList(allSeas));
+	}
+	
+	private void addLands() {
+		Region[] allLands = {Cly, 
+			Edi, Yor, Lon, Lvp, Wal, 
+			Bre, Gas, Mar, Pic, Par, 
+			Bur, Por, Spa, Naf, Tun, 
+			Nap, Rom, Tus, Apu, Ven, 
+			Pie, Bel, Hol, Ruh, Mun, 
+			Kie, Ber, Sil, Pru, Tyr, 
+			Tri, Vie, Boh, Gal, Bud, 
+			Ser, Alb, Gre, Bul, Rum, 
+			Con, Ank, Smy, Syr, Arm, 
+			Sev, Ukr, War, Lvn, Mos, 
+			Stp, Fin, Nwy, Swe, Den
+		};
+		this.lands = new ArrayList<Region>(Arrays.asList(allLands));
+	}
+	
+	private Map<String, Region> createRegionHash() {
+		
+		HashMap<String, Region> tempRegionHash = new HashMap<String, Region>();
+		
+		for (Region r: this.regions) {
+			tempRegionHash.put(r.alias, r);
+		}
+		
+		return tempRegionHash;
+	}
+	
+	private void createAdjacencyMap() {
+
 		for(int i=0; i < this.regions.size(); i++) {
 			//add adjacent Regions to their list
 		}
@@ -688,15 +695,21 @@ public class DiplomacyLogic {
 
 
 	int countLand() {
-		return 0;
+		return this.lands.size();
 	}
 	
 	int countSea() {
-		return 0;
+		return this.seas.size();
 	}
 	
 	int countSourceCenter () {
-		return 0;
+		int numOfSourceCenters = 0;
+		for (Region r:this.regions) {
+			if (r.isSourceCenter) {
+				numOfSourceCenters += 1;
+			}
+		}
+		return numOfSourceCenters;
 	}
 	
 	
@@ -711,26 +724,9 @@ public class DiplomacyLogic {
 	
 	public static void main(String args[]) {
 		DiplomacyLogic d = new DiplomacyLogic();
-		Region[] rs = d.regions;
-		List<String> regionShort = new ArrayList<>();
-		for (int i=0; i<rs.length; i++) {
-			regionShort.add(rs[i].name.substring(0, 3));
-		}
-		
-		HashSet<String> setRegions = new HashSet<String>(regionShort);
-		
-		if (setRegions.size() < regionShort.size()) {
-			System.out.println("Duplication");
-		}
-		
-		HashMap<String, Integer> counter = new HashMap<String, Integer>();
-		for (int i=0; i<regionShort.size(); i++) {
-			
-		}
-		
-		for (int i=0; i<regionShort.size(); i++) {
-			System.out.println("'"+regionShort.get(i)+"'," );
-		}
+		System.out.println(d.countLand());
+		System.out.println(d.countSea());
+		System.out.println(d.countSourceCenter());
 		
  	}
 }

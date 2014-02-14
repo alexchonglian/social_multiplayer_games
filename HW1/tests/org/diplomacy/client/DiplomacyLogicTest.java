@@ -1,5 +1,7 @@
 package org.diplomacy.client;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +33,7 @@ public class DiplomacyLogicTest {
 	private static final String FALL = "FALL";
 	private static final String YEAR = "year";
 	
+	// Disclose orders only after everyone submitted
 	private static final String Austria_Submitted = "Austria_Submitted";
 	private static final String Turkey_Submitted = "Turkey_Submitted";
 	private static final String Italy_Submitted = "Italy_Submitted";
@@ -39,6 +42,7 @@ public class DiplomacyLogicTest {
 	private static final String Germany_Submitted = "Germany_Submitted";
 	private static final String Russia_Submitted = "Russia_Submitted";
 
+	// keep it, may be useful later
 	private void assertMoveOk(VerifyMove verifyMove) {
 		diplomacyLogic.checkMoveIsLegal(verifyMove);
 	}
@@ -48,7 +52,334 @@ public class DiplomacyLogicTest {
 		assertEquals(verifyMove.getLastMovePlayerId(),
 				verifyDone.getHackerPlayerId());
 	}
+
 	
+	/* 
+	 * Alright, Let's jump into the test
+	 * 
+	 * [Make sure the initial configuration is right, no behavior up to that point]
+	 * 
+	 * 1. Map is loaded correctly.
+	 * 
+	 * 		Number of regions, seas, lands, sourcecenters
+	 * 
+	 * 		Troops from different nation on correct position
+	 * 
+	 * 		The connectivity is right (but we can't cover everything)
+	 *  	
+	 * 2. Army and Fleet can move accordingly.
+	 * 
+	 * 		move is valid or not (hold, attack, support, convoy)
+	 * 
+	 */
+	
+	
+	@Test
+	public void test56Land() {
+		//56 lands on map
+		assertEquals(56, diplomacyLogic.countLand());
+	}
+	
+	@Test
+	public void test19Seas() {
+		// 19 seas on map
+		assertEquals(19, diplomacyLogic.countSea());
+	}
+	
+	@Test
+	public void test34SourceCenters() {
+		// 34 source centers on map
+		assertEquals(34, diplomacyLogic.countSourceCenter());
+	}
+	
+	@Test
+	public void testTroopsOfAustriaAssignedOnMap() {
+		//Austria has their troops on the right position?
+		ArrayList<Troop> AustrianTroop = diplomacyLogic.austria.troops;
+		HashSet<Troop> setAustrianTroop = new HashSet();
+		assertEquals(0, 1);
+	}
+	
+	@Test
+	public void testTroopsOfTurkeyAssignedOnMap() {
+		//Turkey has their troops on the right position?
+		ArrayList<Troop> AustrianTroop = diplomacyLogic.austria.troops;
+		HashSet<Troop> setAustrianTroop = new HashSet();
+		assertEquals(0, 1);
+	}
+	
+	@Test
+	public void testTroopsOfItalyAssignedOnMap() {
+		//Italy has their troops on the right position?
+		ArrayList<Troop> AustrianTroop = diplomacyLogic.Austria.troops;
+		assertEquals(0, 1);
+	}
+	
+	@Test
+	public void testTroopsOfFranceAssignedOnMap() {
+		//France has their troops on the right position?
+		assertEquals(0, 1);
+	}
+	
+	@Test
+	public void testTroopsOfEnglandAssignedOnMap() {
+		//England has their troops on the right position?
+		assertEquals(0, 1);
+	}
+	
+	@Test
+	public void testTroopsOfGermanyAssignedOnMap() {
+		//Germany has their troops on the right position?
+		assertEquals(0, 1);
+	}
+	
+	@Test
+	public void testTroopsOfRussiaAssignedOnMap() {
+		//Russian has their troops on the right position?
+		assertEquals(0, 1);
+	}
+	
+	@Test
+	public void testPicardyAdjacentToBelgium() {
+		//Picardy and Belgium are adjacent
+		assertEquals(0, 1);
+	}
+	
+	@Test
+	public void testNormandianSeaAdjacentToBlackSea() {
+		//NormandianSea and BlackSea are NOT adjacent
+		assertEquals(0, 1);
+	}
+	
+	@Test
+	public void testArmyCanEnterLandRegion() {
+		//Russian has their troops on the right position?
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testArmyCanNotEnterSeaRegion() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testFleetCanEnterSeaRegion() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testFleetCanEnterCoastalRegion() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testFleetCanNotEnterNonCoastalRegion() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testFleetCanNotGoThroughLandRegion() {
+		// EnglishChannel -> Spain -> West Med.
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	
+	/*	
+	 * [Make sure users interact in the way I expected ]
+	 * 
+	 * 1. Map is loaded correctly.
+	 * 
+	 * 		Number of regions, seas, lands, sourcecenters
+	 * 
+	 * 		Troops from different nation on correct position
+	 * 
+	 * 		The connectivity is right (but we can't cover everything)
+	 *  	
+	 * 2. Orders are judged correctly
+	 * 
+	 * 		move is valid or not (hold, attack, support, convoy)
+	 * 
+	 */
+	
+	@Test
+	public void testArmyBelgiumHolds() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testArmyInBurgundyAttacksBelgium() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testFleetInEnglishChannelAttackBelgium() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testArmyInBurgundyCanNotAttackMoscow() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testFleetInEnglishChannelCanNotAttackBlackSea() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testArmyInBurgundyAttacksBelgiumFailWhenDefendantArmyInBelgium() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testBothArmiesInBurgundyAndRuhrAttackBelgiumSucceedEvenDefendantIn() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testFleetFromEnglishChannelSupportArmyInBurgundyAttackBelgium() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testSupportDefence() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testSupportAttackFromForeignArmy() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testSupportDefenceFromForeignArmy() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testCuttingSupport() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testFleetInEnglishChannelConvoyArmyInLondonToBelgium() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testConvoyFailedIfArmyWriteWrongOrder() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testConvoyFailedIfArmyWithoutEnoughSupport() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testConvoyFailedWhenFleetDislodged() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testCanNotDislodgeToNonAdjacentRegion() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testCanNotDisplodgeToNonVacantRegion() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testCanNotDislodgeToWhereAttackerCameFrom() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testCanNotDislodgeToWhereEmptyForBounce() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testCanNotCutSupportAgainstSelf() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void test() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testLegalMoveArmyOnLand() {
+	    VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(0, verifyDone.getHackerPlayerId());
+	}
+
+	@Test
+	public void testIllegalMoveYYY() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
+	    assertEquals(verifyMove.getLastMovePlayerId(), verifyDone.getHackerPlayerId());
+	}
 
 	private static final String PLAYER_ID = "playerId";
 	/*
@@ -335,291 +666,4 @@ public class DiplomacyLogicTest {
 	
 	
 	
-	
-	
-	@Test
-	public void test56Land() {
-		//56 lands on map
-		assertEquals(56, diplomacyLogic.countLand());
-	}
-	
-	@Test
-	public void test19Seas() {
-		// 19 seas on map
-		assertEquals(19, diplomacyLogic.countSea());
-	}
-	
-	@Test
-	public void test34SourceCenters() {
-		// 34 source centers on map
-		assertEquals(34, diplomacyLogic.countSourceCenter());
-	}
-	
-	@Test
-	public void testTroopsOfAustriaAssignedOnMap() {
-		//Austria has their troops on the right position?
-		assertEquals(0, 1);
-	}
-	
-	@Test
-	public void testTroopsOfTurkeyAssignedOnMap() {
-		//Turkey has their troops on the right position?
-		assertEquals(0, 1);
-	}
-	
-	@Test
-	public void testTroopsOfItalyAssignedOnMap() {
-		//Italy has their troops on the right position?
-		assertEquals(0, 1);
-	}
-	
-	@Test
-	public void testTroopsOfFranceAssignedOnMap() {
-		//France has their troops on the right position?
-		assertEquals(0, 1);
-	}
-	
-	@Test
-	public void testTroopsOfEnglandAssignedOnMap() {
-		//England has their troops on the right position?
-		assertEquals(0, 1);
-	}
-	
-	@Test
-	public void testTroopsOfGermanyAssignedOnMap() {
-		//Germany has their troops on the right position?
-		assertEquals(0, 1);
-	}
-	
-	@Test
-	public void testTroopsOfRussiaAssignedOnMap() {
-		//Russian has their troops on the right position?
-		assertEquals(0, 1);
-	}
-	
-	@Test
-	public void testPicardyAdjacentToBelgium() {
-		//Picardy and Belgium are adjacent
-		assertEquals(0, 1);
-	}
-	
-	@Test
-	public void testNormandianSeaAdjacentToBlackSea() {
-		//NormandianSea and BlackSea are NOT adjacent
-		assertEquals(0, 1);
-	}
-	
-	@Test
-	public void testArmyCanEnterLandRegion() {
-		//Russian has their troops on the right position?
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testArmyCanNotEnterSeaRegion() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testFleetCanEnterSeaRegion() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testFleetCanEnterCoastalRegion() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testFleetCanNotEnterNonCoastalRegion() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testFleetCanNotGoThroughLandRegion() {
-		// EnglishChannel -> Spain -> West Med.
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testArmyBelgiumHolds() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testArmyInBurgundyAttacksBelgium() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testFleetInEnglishChannelAttackBelgium() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testArmyInBurgundyCanNotAttackMoscow() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testFleetInEnglishChannelCanNotAttackBlackSea() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testArmyInBurgundyAttacksBelgiumFailWhenDefendantArmyInBelgium() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testBothArmiesInBurgundyAndRuhrAttackBelgiumSucceedEvenDefendantIn() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testFleetFromEnglishChannelSupportArmyInBurgundyAttackBelgium() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testSupportDefence() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testSupportAttackFromForeignArmy() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testSupportDefenceFromForeignArmy() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testCuttingSupport() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testFleetInEnglishChannelConvoyArmyInLondonToBelgium() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testConvoyFailedIfArmyWriteWrongOrder() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testConvoyFailedIfArmyWithoutEnoughSupport() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testConvoyFailedWhenFleetDislodged() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testCanNotDislodgeToNonAdjacentRegion() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testCanNotDisplodgeToNonVacantRegion() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testCanNotDislodgeToWhereAttackerCameFrom() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testCanNotDislodgeToWhereEmptyForBounce() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testCanNotCutSupportAgainstSelf() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void test() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testLegalMoveArmyOnLand() {
-	    VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-
-	@Test
-	public void testIllegalMoveYYY() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new DiplomacyLogic().verify(verifyMove);
-	    assertEquals(verifyMove.getLastMovePlayerId(), verifyDone.getHackerPlayerId());
-	}
-
-
 }
