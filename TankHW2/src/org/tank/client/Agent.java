@@ -170,8 +170,13 @@ public class Agent {
 	}
 	
 	public void MouseReleased(MouseEvent event) {
+<<<<<<< HEAD
 		int velocityX = (event.getX() - this.x+AGENT_WIDTH/2)/5;
 		int velocityY = - 10 + (event.getY() - this.y+AGENT_HEIGHT/2)/5;
+=======
+		int velocityX = (event.getX() - this.x+AGENT_WIDTH/2)/4;
+		int velocityY = - 10 + (event.getY() - this.y+AGENT_HEIGHT/2)/4;
+>>>>>>> d1d554e476fea4ce619a86dc861cbd3984e4162a
 		Bullet m = fire(velocityX, velocityY);
 		this.env.bulletList.add(m);
 		
