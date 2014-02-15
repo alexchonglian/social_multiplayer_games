@@ -20,10 +20,8 @@ public class Agent {
 	
 	public static final int GAME_WIDTH = 800;
 	public static final int GAME_HEIGHT = 600;
-	
 	public static final int AGENT_WIDTH = 20;
 	public static final int AGENT_HEIGHT = 20;
-	
 	public static final int SPEED = 20;
 	public static final int ACCELERATION = 10;
 	public static final int FRICTION = 1;
@@ -31,9 +29,7 @@ public class Agent {
 	
 	public int playerNumber;
 	
-	
-	
-	
+
 	//constructor
 	public Agent(int x, int y, int playerNumber) {
 		this.x = x;
@@ -54,7 +50,6 @@ public class Agent {
 		g.setColor(Color.WHITE);
 		g.fillRect(x, y, AGENT_WIDTH, AGENT_HEIGHT);
 		g.setColor(c);
-
 		this.move();
 	}
 	
@@ -175,8 +170,8 @@ public class Agent {
 	}
 	
 	public void MouseReleased(MouseEvent event) {
-		int velocityX = (event.getX() - this.x+AGENT_WIDTH/2)/10;
-		int velocityY = - 20 + (event.getY() - this.y+AGENT_HEIGHT/2)/10;
+		int velocityX = (event.getX() - this.x+AGENT_WIDTH/2)/4;
+		int velocityY = - 10 + (event.getY() - this.y+AGENT_HEIGHT/2)/4;
 		Bullet m = fire(velocityX, velocityY);
 		this.env.bulletList.add(m);
 		
