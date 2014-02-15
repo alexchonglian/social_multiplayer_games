@@ -16,7 +16,7 @@ class Region {
 	String alias;
 	int type;
 	boolean isSourceCenter;
-	Troop occupant;
+	// Troop occupant;
 	List<Region> adjacentRegions;
 	
 	public boolean isSea() {
@@ -35,14 +35,14 @@ class Region {
 		this.isSourceCenter = isSourceCenter;
 	}
 
-	public Region(String name, String alias, int type, boolean isSourceCenter, Troop occupant) {
-		super();
-		this.name = name;
-		this.alias = alias;
-		this.type = type;
-		this.isSourceCenter = isSourceCenter;
-		this.occupant = occupant;
-	}
+//	public Region(String name, String alias, int type, boolean isSourceCenter, Troop occupant) {
+//		super();
+//		this.name = name;
+//		this.alias = alias;
+//		this.type = type;
+//		this.isSourceCenter = isSourceCenter;
+//		this.occupant = occupant;
+//	}
 	
 	void setAdjacentRegions(List<Region> adjacentRegions) {
 		this.adjacentRegions = adjacentRegions;
@@ -114,8 +114,6 @@ class Judge {}
 
 public class DiplomacyLogic {
 	
-	Map<String, Object> state;
-	
 	private static final String MOVEMENT = "MOVEMENT";
 	private static final String RESOLVE = "RESOLVE";
 	private static final String ADJUSTMENT = "ADJUSTMENT";
@@ -153,6 +151,21 @@ public class DiplomacyLogic {
 	List<Region> regions;
 	List<Region> seas;
 	List<Region> lands;
+	
+	/*
+	 * State changes as the game continues.
+	 * 
+	 * For example 
+	 * 
+	 * { Spa: null,			=> Spain is not occupied
+	 *   Mun: [Germany],	=> Munich is German's but no troop guarding 
+	 *   Par: [France, A], 	=> France Army in Paris
+	 *   Swe: [Russia, F]	=> Russia Fleet in Sweden
+	 * }
+	 * 
+	 * in total 75 regions
+	 */
+	Map<String, Object> state;
 	
 	
 	// useful hash to make query faster
@@ -467,7 +480,12 @@ public class DiplomacyLogic {
 			}}
 		};
 	
-
+	String[][] initialDeploy = {
+			{},
+			{},
+			{}
+	};
+	
 	Nation[] nations;
 	
 	// will instantiate them in constructor
@@ -485,6 +503,8 @@ public class DiplomacyLogic {
 		this.addSeas(); //add reference to seas[]
 		this.addLands(); //add reference to lands[]
 		this.regionHash = this.createRegionHash();
+		this.state = this.createEmptyState();
+		this.deployTroopsOnStateMap();
 	}
 
 	private void createRegions() {
@@ -670,6 +690,21 @@ public class DiplomacyLogic {
 		return nations;
 	}
 
+	private Map<String, Object> createEmptyState() {
+		Map<String, Object> emptyState = new HashMap<String, Object>();
+		// have to make sure regions are properly initialized before we call it
+		for (Region r: this.regions) {
+			emptyState.put(r.alias, null);
+		}
+		return emptyState;
+	}
+	
+	private void deployTroopsOnStateMap() {
+		for (int i=0; i<initialDeploy.length; i++) {
+			this.state.put(key, value);
+		}
+		
+	}
 
 	int countLand() {
 		return this.lands.size();
@@ -704,6 +739,9 @@ public class DiplomacyLogic {
 		System.out.println(d.countLand());
 		System.out.println(d.countSea());
 		System.out.println(d.countSourceCenter());
+		for (Region r: d.regions) {
+			System.out.println(r);
+		}
  	}
 }
 
