@@ -2,19 +2,22 @@ package org.havannah.client;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.havannah.client.GameApi.Operation;
 import org.havannah.client.GameApi.VerifyMove;
 import org.havannah.client.GameApi.VerifyMoveDone;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 public class HavannahLogic {
 	
 	
-	/*	
+	/*
 	 * Board representation
 	 * 	
 	 *    0 0 0 0
@@ -71,19 +74,25 @@ public class HavannahLogic {
 	
 	public int boardSize;
 	
+	//won't change it after initialize it
 	public List<ImmutableList<Integer>> points;// [[0 0 0],[-1 0 1],[0 -1 1]]
 	
+	// must be a mutable data structure. keep adding new pieces
+	// keep in client side. only send { B: points, W: points }
 	public Map<ImmutableList<Integer>, ClusterLabel> black;// {[0 0 0]: c1, [-1 0 1]:c2}
-	
 	public Map<ImmutableList<Integer>, ClusterLabel> white;// {[0 -1 1]:c3}
 	
 	private static final String W = "W"; // White hand
 	private static final String B = "B"; // Black hand
+	private final ImmutableMap<String, Object> emptyState = ImmutableMap.<String, Object>of();
+
 	
 	/* 
-	 * There is NO need to check a point's validity with "points.contains(p)"
 	 * verify(VerifyMove) will filter invalid points before calling these functions below
-	 * 
+	 * For them, NO need to check point validity by "points.contains(p)"
+	 *  |
+	 *  |
+	 *  V
 	 * 1. distance(p, q)
 	 * 2. isNeighbor(p, q)
 	 * 3. getNeighborsOf(p)
@@ -149,15 +158,15 @@ public class HavannahLogic {
 
 	
 	
-
 	public HavannahLogic() {
-		this.boardSize = 5;// by default
-		this.points = createPoints();
+		this(5);// boardSize = 5 by default
 	}
 	
 	public HavannahLogic(int boardSize) {
 		this.boardSize = boardSize;
 		this.points = createPoints();
+		this.black = new HashMap<ImmutableList<Integer>, ClusterLabel>();
+		this.white = new HashMap<ImmutableList<Integer>, ClusterLabel>();
 	}
 	
 	public List<ImmutableList<Integer>> createPoints() {
@@ -178,20 +187,114 @@ public class HavannahLogic {
 		return points;
 	}
 	
+	
+	// update black and white players' pieces collection after player make move
+	// only called after making sure that the position is valid and not occupied by both
+	public void addPointToPlayer(ImmutableList<Integer> newPoint, String playerStr)
+			throws Exception {
+		Map<ImmutableList<Integer>, ClusterLabel> playerCollection;
+		if (playerStr == W) {
+			playerCollection = this.white;
+		} else if (playerStr == B) {
+			playerCollection = this.black;
+		} else {
+			throw new IllegalArgumentException("playerStr must be W or B");
+		}
+		
+		// see if neighbors are in connected component (connected if has cluster label)
+		List<ImmutableList<Integer>> neighborsOfNewPoint = getNeighborsOf(newPoint);
+		// create map that stores neighbors that has connection (has cluster label)
+		Map<ImmutableList<Integer>, ClusterLabel> connectedNeighbors = new HashMap();
+		
+		for (ImmutableList<Integer> neighborPt: neighborsOfNewPoint) {
+			ClusterLabel label = playerCollection.get(neighborPt);
+			if ( label != null ) {
+				connectedNeighbors.put(neighborPt, label);
+			}
+		}
+		
+		int ptIsCorner = this.isCornerPoint(newPoint)? 1:0;
+		int ptIsSide = this.isSidePoint(newPoint)? 1:0;
+		
+		switch (connectedNeighbors.size()) {
+		
+			case 0:
+			/* If you are an island, create a new cluster for you!
+			 * 
+			 *  0 0      0 0
+			 * 0 X 0 => 0 A 0
+			 *  0 0      0 0
+			 */
+				playerCollection.put(newPoint, new ClusterLabel(ptIsCorner, ptIsSide));
+				break;
+				
+				
+			case 1:
+			/* One neighbor, join him!
+			 *  A 0      A 0
+			 * 0 X 0 => 0 A 0
+			 *  0 0      0 0
+			 */
+				for (ImmutableList<Integer> pt: connectedNeighbors.keySet()) {
+					ClusterLabel cluster1 = playerCollection.get(pt);
+					cluster1.addCornerAndSide(ptIsCorner, ptIsSide);
+					playerCollection.put(pt, cluster1);
+				}
+				break;
+				
+			case 2:
+			/* 2 neighbors = { n1 n2 }
+			 * if n1.cluster = n2.cluster || not neighbor(n1, n2)  ==> probably a cycle!
+			 *  A 0      A 0
+			 * 0 X A => 0 A A
+			 *  0 0      0 0
+			 * 
+			 * if n1.cluster = n2.cluster || neighbor(n1, n2)  ==> join them!
+			 *  A A      A A
+			 * 0 X 0 => 0 A 0
+			 *  0 0      0 0
+			 *  
+			 * if n1.cluster != n2.cluster || not neighbor(n1, n2)  ==> update cluster and player collection
+			 *  A 0      C 0
+			 * 0 X B => 0 C C
+			 *  0 0      0 0
+			 *  
+			 * if n1.cluster = n2.cluster || not neighbor(n1, n2)  ==> something goes WRONG!
+			 *  A B      A B
+			 * 0 X 0 => 0 A 0
+			 *  0 0      0 0
+			 */
+				break;
+				
+			case 3:
+				break;
+			case 4:
+				break;
+			case 5:
+			/* 5 neighbors must be in same cluster or something goes wrong
+			 *  A A      A A
+			 * A X 0 => A A 0
+			 *  A A      A A
+			 */
+				break;
+			case 6:
+			/* 6 neighbors must be in same cluster or something goes wrong
+			 *  A A      A A
+			 * A X A => A A A
+			 *  A A      A A
+			 */
+				break;
+			default:
+			// more than 7 neighbor?!
+				throw new Exception();
+		}
+
+	}
+	
 	void checkMoveIsLegal(VerifyMove verifyMove) {
 		List<Operation> lastMove = verifyMove.getLastMove();
 		Map<String, Object> lastState = verifyMove.getLastState();
-		Map<String, Object> State = verifyMove.getState();
-		// Check the operations are as expected.
-		List<Operation> expectedOperations = getExpectedOperations(
-				lastState, lastMove, verifyMove.getPlayerIds(), verifyMove.getLastMovePlayerId());
-		check(expectedOperations.equals(lastMove), expectedOperations, lastMove);
-		// We use SetTurn, so we don't need to check that the correct player did the move.
-		// However, we do need to check the first move is done by the white player (and then in the
-		// first MakeMove we'll send SetTurn which will guarantee the correct player send MakeMove).
-		if (lastState.isEmpty()) {
-			check(verifyMove.getLastMovePlayerId() == verifyMove.getPlayerIds().get(0));
-		}
+		
 	}
 	
 	public VerifyMoveDone verify(VerifyMove verifyMove) {
@@ -209,24 +312,57 @@ public class HavannahLogic {
 		}
 	}
 	
+//	private VerifyMove move(int lastMovePlayerId, Map<String, Object> state, List<Operation> lastMove) {
+//		return new VerifyMove(playersInfo,state,emptyState, lastMove, lastMovePlayerId, ImmutableMap.<Integer, Integer>of());
+//	}
+//	VerifyMove n = new VerifyMove(List<Map<String, Object>> playersInfo,
+//	        Map<String, Object> state,
+//	        Map<String, Object> lastState,
+//	        List<Operation> lastMove,
+//	        int lastMovePlayerId,
+//	        Map<Integer, Integer> playerIdToNumberOfTokensInPot);
+	
 	public static void main(String[] args) {
 		HavannahLogic h = new HavannahLogic();
 		ImmutableList<Integer> p = ImmutableList.of(4, -1, -3);
-		h.getNeighborsOf(p);
+		HashMap<Integer, Integer> hash = new HashMap<Integer, Integer>();
+		hash.put(1,10);
+		hash.put(2,20);
+		hash.put(3,30);
+		hash.put(4,40);
 	}
 }
 
 
 class ClusterLabel {
 	private static int idAccumulator = 0;//make sure unique id
-	public int id; 
-	int numCorner;
-	int numSide;
+	private int id; 
+	private int numCorner;
+	private int numSide;
 	
+	
+	// Getters and Setters
+	public int getId() {
+		return id;
+	}
+
+	public int getNumCorner() {
+		return numCorner;
+	}
+
+	public int getNumSide() {
+		return numSide;
+	}
+
+	public void addCornerAndSide(int extraNumCorner, int extraNumSide) {
+		this.numCorner += extraNumCorner;
+		this.numSide += extraNumSide;
+	}
+	
+	
+	// Contructors
 	public ClusterLabel() {
-		this.id = ClusterLabel.idAccumulator++;
-		this.numCorner = 0;
-		this.numSide = 0;
+		this(0, 0);
 	}
 	
 	public ClusterLabel (int numCorner, int numSide) {
