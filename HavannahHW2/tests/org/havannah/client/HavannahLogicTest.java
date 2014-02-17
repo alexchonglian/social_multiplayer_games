@@ -31,7 +31,13 @@ import com.google.common.collect.ImmutableMap;
 public class HavannahLogicTest {
 	/** RULE OF THE GAME */
 	
-	HavannahLogic havannahLogic = new HavannahLogic(5);
+	private static final String W = "W";
+	private static final String B = "B";
+	private static final String PLAYER_ID = "playerId";
+	private final int wId = 87;
+	private final int bId = 88;
+	
+	private HavannahLogic havannahLogic = new HavannahLogic(5);
 	
 	private void assertMoveOk(VerifyMove verifyMove) {
 		havannahLogic.checkMoveIsLegal(verifyMove);
@@ -42,39 +48,121 @@ public class HavannahLogicTest {
 		assertEquals(verifyMove.getLastMovePlayerId(),
 				verifyDone.getHackerPlayerId());
 	}
-
 	
-	@Test
-	public void testCorrectNumberOfPoints() {
-		// len (points) = 3s^2 - 3s + 1
-		int bs = havannahLogic.boardSize;
-		assertEquals(havannahLogic.points.size(), 3*Math.pow(bs, 2) - 3*bs + 1);
+	private VerifyMove move(int lastMovePlayerId, 
+			Map<String, Object> lastState, List<Operation> lastMove) {
+		return new VerifyMove(playersInfo, emptyState,lastState,
+				lastMove, lastMovePlayerId, ImmutableMap.<Integer, Integer>of());
 	}
 	
 	@Test
-	public void testdistance() {
-		// 19 seas on map
-		assertEquals(havannahLogic.distance(null, null), 2);
+	public void testCorrectNumberOfPoints() {
+		// size (points) = 3s^2 - 3s + 1
+		int bs = havannahLogic.boardSize;
+		int expectedSize = (int) (3*Math.pow(bs, 2) - 3*bs + 1);
+		assertEquals(havannahLogic.points.size(), expectedSize);
+	}
+	
+	
+	private final List<Integer> pointOrigin = ImmutableList.<Integer>of(0, 0, 0);
+	private final List<Integer> pointNeighborOrigin = ImmutableList.<Integer>of(0, -1, 1);
+	private final List<Integer> pointSide = ImmutableList.<Integer>of(4, -1, -3);
+	private final List<Integer> pointCorner = ImmutableList.<Integer>of(4, -4, 0);
+	
+	private final List<ImmutableList<Integer>> neiborsOfPointOrigin = 
+	  		ImmutableList.<ImmutableList<Integer>>of(// points around [0 0 0]
+	  				ImmutableList.<Integer>of(0, 1, -1),
+	  				ImmutableList.<Integer>of(-1, 1, 0),
+	  				ImmutableList.<Integer>of(-1, 0, 1),
+	  				ImmutableList.<Integer>of(0, -1, 1),
+	  				ImmutableList.<Integer>of(1, -1, 0),
+	  				ImmutableList.<Integer>of(1, 0, -1)
+	  		);
+	
+	private final List<ImmutableList<Integer>> neiborsOfPointNeighborOrigin = 
+	  		ImmutableList.<ImmutableList<Integer>>of(// points around [0 -1 1]
+	  				ImmutableList.<Integer>of(0, 0, 0),
+	  				ImmutableList.<Integer>of(-1, 0, 1),
+	  				ImmutableList.<Integer>of(-1, -1, 2),
+	  				ImmutableList.<Integer>of(0, -2, 2),
+	  				ImmutableList.<Integer>of(1, -2, 1),
+	  				ImmutableList.<Integer>of(1, -1, 0)
+	  		);
+	
+	private final List<ImmutableList<Integer>> neiborsOfPointSide = 
+	  		ImmutableList.<ImmutableList<Integer>>of(// points around [4 -1 -3]
+	  				ImmutableList.<Integer>of(4, 0, -4),
+	  				ImmutableList.<Integer>of(3, 0, -3),
+	  				ImmutableList.<Integer>of(3, -1, -2),
+	  				ImmutableList.<Integer>of(4, -2, -2)
+	  		);
+	
+	private final List<ImmutableList<Integer>> neiborsOfPointCorner = 
+	  		ImmutableList.<ImmutableList<Integer>>of(// points around [4 -4 0]
+	  				ImmutableList.<Integer>of(4, -3, -1),
+	  				ImmutableList.<Integer>of(3, -3, 0),
+	  				ImmutableList.<Integer>of(4, -4, 0)
+	  		);
+	
+	
+	
+	
+	
+	// They will filter invalid points before calling these functions
+	// Invalid points will never appear here
+	@Test
+	public void testDistance() {
+		// distance([0 0 0], [1 0 -1]) => 2
+		assertEquals(havannahLogic.distance(pointOrigin, pointOrigin), 0);
+		assertEquals(havannahLogic.distance(pointNeighborOrigin, pointNeighborOrigin), 0);
+		assertEquals(havannahLogic.distance(pointOrigin, pointNeighborOrigin), 2);
+		assertEquals(havannahLogic.distance(pointOrigin, pointSide), 8);
+		assertEquals(havannahLogic.distance(pointNeighborOrigin, pointSide), 6);
+		assertEquals(havannahLogic.distance(pointSide, pointSide), 0);
+		assertEquals(havannahLogic.distance(pointSide, pointCorner), 6);
+		// passing identical points as parameters will never happen in reality
+		// we check if point held by players before calling functions
 	}
 	
 	@Test
 	public void testIsNeighbor() {
-		// 34 source centers on map
-		assertEquals(havannahLogic.isNeighbor(null, null), false);
+		ImmutableList<Integer> p = ImmutableList.of(0, 0, 0);
+		ImmutableList<Integer> q = ImmutableList.of(0, -1, -1);
+		ImmutableList<Integer> r = ImmutableList.of(4, -1, -3);
+		assertEquals(havannahLogic.isNeighbor(pointOrigin, pointOrigin), false);
+		// the above never happen in reality
+		// we check identity first and then check adjacency
+		assertEquals(havannahLogic.isNeighbor(pointOrigin, pointNeighborOrigin), true);
+		assertEquals(havannahLogic.isNeighbor(pointNeighborOrigin, pointOrigin), true);
+		assertEquals(havannahLogic.isNeighbor(pointOrigin, pointSide), false);
+		assertEquals(havannahLogic.isNeighbor(pointSide, pointOrigin), false);
+		assertEquals(havannahLogic.isNeighbor(pointSide, pointCorner), false);
+		assertEquals(havannahLogic.isNeighbor(pointCorner, pointSide), false);
+
 	}
 	
 	@Test
-	public void testPicardyAdjacentToBelgium() {
-		//Picardy and Belgium are adjacent
-		ArrayList<Troop> AustrianTroop = havannahLogic.austria.troops;
-		HashSet<Troop> setAustrianTroop = new HashSet();
-		assertEquals(0, 1);
+	public void testGetNeighborsOf() {
+		assertEquals(havannahLogic.getNeighborsOf(pointOrigin), neiborsOfPointOrigin);
+		assertEquals(havannahLogic.getNeighborsOf(pointNeighborOrigin), neiborsOfPointNeighborOrigin);
+		assertEquals(havannahLogic.getNeighborsOf(pointSide), neiborsOfPointSide);
+		assertEquals(havannahLogic.getNeighborsOf(pointCorner), neiborsOfPointCorner);
 	}
 	
 	@Test
-	public void testNormandianSeaAdjacentToBlackSea() {
-		//NormandianSea and BlackSea are NOT adjacent
-		assertEquals(0, 1);
+	public void testIsSidePoint() {
+		assertEquals(havannahLogic.isSidePoint(pointOrigin), false);
+		assertEquals(havannahLogic.isSidePoint(pointNeighborOrigin), false);
+		assertEquals(havannahLogic.isSidePoint(pointSide), false);
+		assertEquals(havannahLogic.isSidePoint(pointCorner), true);
+	}
+	
+	@Test
+	public void testIsCornerPoint() {
+		assertEquals(havannahLogic.isSidePoint(pointOrigin), false);
+		assertEquals(havannahLogic.isSidePoint(pointNeighborOrigin), false);
+		assertEquals(havannahLogic.isSidePoint(pointSide), true);
+		assertEquals(havannahLogic.isSidePoint(pointCorner), false);
 	}
 	
 	@Test
@@ -85,72 +173,10 @@ public class HavannahLogicTest {
 	    assertEquals(0, verifyDone.getHackerPlayerId());
 	}
 	
-	@Test
-	public void testArmyCanNotEnterSeaRegion() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testFleetCanEnterSeaRegion() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testFleetCanEnterCoastalRegion() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testFleetCanNotEnterNonCoastalRegion() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testFleetCanNotGoThroughLandRegion() {
-		// EnglishChannel -> Spain -> West Med.
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
+
 	
 	
-	/*	
-	 * Part Two: [Make sure users interact in the way I expected ]
-	 * 
-	 * Mechanism of order submission: 
-	 * 
-	 * 7 players submitted order and claimed that they submitted
-	 * 		>>> set {myOrder: {actions}, visibleTo: me}
-	 * 		>>> set me_submitted = true
-	 * 
-	 * if they submitted they can not make any change. UI will disable submit button.
-	 * 		>>> $('input:submit').click(function(){	$(this).attr("disabled", true);});
-	 * 
-	 * when all submitted then reveal and update states
-	 * 		>>> if (7 nations claimed submission) {setVisibilityToALL}
-	 * 
-	 * submitting blank order is treated as a pass
-	 * 
-	 * 1. Orders are not revealed until all submitted
-	 * 		
-	 *  	
-	 * 2. Can jump to next stage
-	 * 		
-	 * 		Year: 1900 => 1901 => 1902
-	 * 
-	 * 		Season: Spring => Fall
-	 * 
-	 * 		Stage: Movement => Resolve => Retreat => Adjustment
-	 * 
-	 */
+
 	
 	// create empty map for later use
 	
@@ -198,159 +224,7 @@ public class HavannahLogicTest {
 	    assertEquals(0, verifyDone.getHackerPlayerId());
 	}
 	
-	@Test
-	public void testArmyInBurgundyAttacksBelgium() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testFleetInEnglishChannelAttackBelgium() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testArmyInBurgundyCanNotAttackMoscow() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testFleetInEnglishChannelCanNotAttackBlackSea() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testArmyInBurgundyAttacksBelgiumFailWhenDefendantArmyInBelgium() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testBothArmiesInBurgundyAndRuhrAttackBelgiumSucceedEvenDefendantIn() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testFleetFromEnglishChannelSupportArmyInBurgundyAttackBelgium() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testSupportDefence() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testSupportAttackFromForeignArmy() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testSupportDefenceFromForeignArmy() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testCuttingSupport() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testFleetInEnglishChannelConvoyArmyInLondonToBelgium() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testConvoyFailedIfArmyWriteWrongOrder() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testConvoyFailedIfArmyWithoutEnoughSupport() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testConvoyFailedWhenFleetDislodged() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testCanNotDislodgeToNonAdjacentRegion() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testCanNotDisplodgeToNonVacantRegion() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testCanNotDislodgeToWhereAttackerCameFrom() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testCanNotDislodgeToWhereEmptyForBounce() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testCanNotCutSupportAgainstSelf() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void test() {
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	@Test
-	public void testLegalMoveArmyOnLand() {
-	    VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
+
 
 	@Test
 	public void testIllegalMoveYYY() {
@@ -360,26 +234,12 @@ public class HavannahLogicTest {
 	}
 	
 	
-	// keep it, may be useful later
-	
-	private static final String PLAYER_ID = "playerId";
 	/*
 	 * The entries used in the cheat game are: turn:W/B, isCheater:yes, W, B, M,
 	 * claim, C0...C51 When we send operations on these keys, it will always be
 	 * in the above order.
 	 */
-	private static final String TURN = "turn"; // turn of which player (either W
-												// or B)
-	private static final String W = "W"; // White hand
-	private static final String B = "B"; // Black hand
-	private static final String M = "M"; // Middle pile
-	private static final String CLAIM = "claim"; // a claim has the form:
-													// [3cards, rankK]
-	private static final String IS_CHEATER = "isCheater"; // we claim we have a
-															// cheater
-	private static final String YES = "yes"; // we claim we have a cheater
-	private final int wId = 41;
-	private final int bId = 42;
+
 	private final List<Integer> visibleToW = ImmutableList.of(wId);
 	private final List<Integer> visibleToB = ImmutableList.of(bId);
 	private final Map<String, Object> wInfo = ImmutableMap.<String, Object> of(
@@ -430,14 +290,7 @@ public class HavannahLogicTest {
 					new Set(M, getIndicesInRange(8, 10)), new Set(CLAIM,
 							ImmutableList.of("2cards", "rankA")));
 
-	private VerifyMove move(int lastMovePlayerId,
-			Map<String, Object> lastState, List<Operation> lastMove) {
-		return new VerifyMove(wId, playersInfo,
-		// in cheat we never need to check the resulting state (the server makes
-		// it, and the game
-		// doesn't have any hidden decisions such in Battleships)
-				emptyState, lastState, lastMove, lastMovePlayerId);
-	}
+
 
 	private List<Integer> getIndicesInRange(int fromInclusive, int toInclusive) {
 		return havannahLogic.getIndicesInRange(fromInclusive, toInclusive);
