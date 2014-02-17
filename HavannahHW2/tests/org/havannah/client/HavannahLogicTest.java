@@ -37,6 +37,19 @@ public class HavannahLogicTest {
 	private final int wId = 87;
 	private final int bId = 88;
 	
+	private final Map<String, Object> wInfo = ImmutableMap.<String, Object> of(
+			PLAYER_ID, wId);
+	private final Map<String, Object> bInfo = ImmutableMap.<String, Object> of(
+			PLAYER_ID, bId);
+	private final List<Map<String, Object>> playersInfo = ImmutableList.of(
+			wInfo, bInfo);
+	
+	private final Map<String, Object> emptyState = ImmutableMap
+			.<String, Object> of();
+	
+	private final Map<String, Object> nonEmptyState = ImmutableMap
+			.<String, Object> of("k", "v");
+	
 	private HavannahLogic havannahLogic = new HavannahLogic(5);
 	
 	private void assertMoveOk(VerifyMove verifyMove) {
@@ -64,10 +77,7 @@ public class HavannahLogicTest {
 	}
 	
 	
-	private final List<Integer> pointOrigin = ImmutableList.<Integer>of(0, 0, 0);
-	private final List<Integer> pointNeighborOrigin = ImmutableList.<Integer>of(0, -1, 1);
-	private final List<Integer> pointSide = ImmutableList.<Integer>of(4, -1, -3);
-	private final List<Integer> pointCorner = ImmutableList.<Integer>of(4, -4, 0);
+
 	
 	private final List<ImmutableList<Integer>> neiborsOfPointOrigin = 
 	  		ImmutableList.<ImmutableList<Integer>>of(// points around [0 0 0]
@@ -106,7 +116,10 @@ public class HavannahLogicTest {
 	
 	
 	
-	
+	private final List<Integer> pointOrigin = ImmutableList.<Integer>of(0, 0, 0);
+	private final List<Integer> pointNeighborOrigin = ImmutableList.<Integer>of(0, -1, 1);
+	private final List<Integer> pointSide = ImmutableList.<Integer>of(4, -1, -3);
+	private final List<Integer> pointCorner = ImmutableList.<Integer>of(4, -4, 0);
 	
 	// They will filter invalid points before calling these functions
 	// Invalid points will never appear here
@@ -166,65 +179,57 @@ public class HavannahLogicTest {
 	}
 	
 	@Test
-	public void testArmyCanEnterLandRegion() {
+	public void testAddPointToPlayer1Neighbor() {
+		
+	}
+	
+	@Test
+	public void testAddPointToPlayer2Neighbors() {
+		
+	}
+	
+	@Test
+	public void testAddPointToPlayer3Neighbors() {
+		
+	}
+	
+	@Test
+	public void testAddPointToPlayer4Neighbors() {
+		
+	}
+	
+	@Test
+	public void testAddPointToPlayer5Neighbors() {
+		
+	}
+	
+	@Test
+	public void testAddPointToPlayer6Neighbors() {
+		
+	}
+	
+	@Test
+	public void testVerifyMoveStuff() {
 		//Russian has their troops on the right position?
 		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
 	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
 	    assertEquals(0, verifyDone.getHackerPlayerId());
 	}
 	
-
-	
-	
-
-	
-	// create empty map for later use
-	
-	Map<String, Object> emptyMap = ImmutableMap.<String, Object> builder()
-		.put("NAO", null).put("IRI", null).put("ENG", null).put("MAO", null).put("WES", null)
-		.put("LYO", null).put("TYS", null).put("ION", null).put("ADR", null).put("AEG", null)
-		.put("BLA", null).put("EAS", null).put("BAL", null).put("BOT", null).put("SKA", null)
-		.put("NTH", null).put("HEL", null).put("NWG", null).put("BAR", null).put("Cly", null)
-		.put("Edi", null).put("Yor", null).put("Lon", null).put("Lvp", null).put("Wal", null)
-		.put("Bre", null).put("Gas", null).put("Mar", null).put("Pic", null).put("Par", null)
-		.put("Bur", null).put("Por", null).put("Spa", null).put("Naf", null).put("Tun", null)
-		.put("Nap", null).put("Rom", null).put("Tus", null).put("Apu", null).put("Ven", null)
-		.put("Pie", null).put("Bel", null).put("Hol", null).put("Ruh", null).put("Mun", null)
-		.put("Kie", null).put("Ber", null).put("Sil", null).put("Pru", null).put("Tyr", null)
-		.put("Tri", null).put("Vie", null).put("Boh", null).put("Gal", null).put("Bud", null)
-		.put("Ser", null).put("Alb", null).put("Gre", null).put("Bul", null).put("Rum", null)
-		.put("Con", null).put("Ank", null).put("Smy", null).put("Syr", null).put("Arm", null)
-		.put("Sev", null).put("Ukr", null).put("War", null).put("Lvn", null).put("Mos", null)
-		.put("Stp", null).put("Fin", null).put("Nwy", null).put("Swe", null).put("Den", null)
-		.build();
-
 	
 	@Test
-	public void testArmyBelgiumHolds() {
-		List<String> FranceArmy = ImmutableList.<String> of("France", "A");
-		Map<String, Object> lastState = ImmutableMap.<String, Object> builder()
-				.put("NAO", null).put("IRI", null).put("ENG", null).put("MAO", null).put("WES", null)
-				.put("LYO", null).put("TYS", null).put("ION", null).put("ADR", null).put("AEG", null)
-				.put("BLA", null).put("EAS", null).put("BAL", null).put("BOT", null).put("SKA", null)
-				.put("NTH", null).put("HEL", null).put("NWG", null).put("BAR", null).put("Cly", null)
-				.put("Edi", null).put("Yor", null).put("Lon", null).put("Lvp", null).put("Wal", null)
-				.put("Bre", null).put("Gas", null).put("Mar", null).put("Pic", null).put("Par", null)
-				.put("Bur", null).put("Por", null).put("Spa", null).put("Naf", null).put("Tun", null)
-				.put("Nap", null).put("Rom", null).put("Tus", null).put("Apu", null).put("Ven", null)
-				.put("Pie", null).put("Bel", FranceArmy).put("Hol", null).put("Ruh", null).put("Mun", null)
-				.put("Kie", null).put("Ber", null).put("Sil", null).put("Pru", null).put("Tyr", null)
-				.put("Tri", null).put("Vie", null).put("Boh", null).put("Gal", null).put("Bud", null)
-				.put("Ser", null).put("Alb", null).put("Gre", null).put("Bul", null).put("Rum", null)
-				.put("Con", null).put("Ank", null).put("Smy", null).put("Syr", null).put("Arm", null)
-				.put("Sev", null).put("Ukr", null).put("War", null).put("Lvn", null).put("Mos", null)
-				.put("Stp", null).put("Fin", null).put("Nwy", null).put("Swe", null).put("Den", null)
-				.build();
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
+	public void testInitialMove() {
+		assertMoveOk(move(wId, emptyState, getInitialOperations()));
 	}
-	
 
+	@Test
+	public void testInitialMoveByWrongPlayer() {
+		assertHacker(move(bId, emptyState, getInitialOperations()));
+	}
+
+	
+	
+	
 
 	@Test
 	public void testIllegalMoveYYY() {
@@ -234,24 +239,8 @@ public class HavannahLogicTest {
 	}
 	
 	
-	/*
-	 * The entries used in the cheat game are: turn:W/B, isCheater:yes, W, B, M,
-	 * claim, C0...C51 When we send operations on these keys, it will always be
-	 * in the above order.
-	 */
 
-	private final List<Integer> visibleToW = ImmutableList.of(wId);
-	private final List<Integer> visibleToB = ImmutableList.of(bId);
-	private final Map<String, Object> wInfo = ImmutableMap.<String, Object> of(
-			PLAYER_ID, wId);
-	private final Map<String, Object> bInfo = ImmutableMap.<String, Object> of(
-			PLAYER_ID, bId);
-	private final List<Map<String, Object>> playersInfo = ImmutableList.of(
-			wInfo, bInfo);
-	private final Map<String, Object> emptyState = ImmutableMap
-			.<String, Object> of();
-	private final Map<String, Object> nonEmptyState = ImmutableMap
-			.<String, Object> of("k", "v");
+
 
 	private final Map<String, Object> turnOfWEmptyMiddle = ImmutableMap
 			.<String, Object> of(TURN, W, W, getIndicesInRange(0, 10), B,
@@ -335,15 +324,6 @@ public class HavannahLogicTest {
 				.size());
 	}
 
-	@Test
-	public void testInitialMove() {
-		assertMoveOk(move(wId, emptyState, getInitialOperations()));
-	}
-
-	@Test
-	public void testInitialMoveByWrongPlayer() {
-		assertHacker(move(bId, emptyState, getInitialOperations()));
-	}
 
 	@Test
 	public void testInitialMoveFromNonEmptyState() {
