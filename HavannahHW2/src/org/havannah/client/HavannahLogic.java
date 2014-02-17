@@ -1,6 +1,7 @@
 package org.havannah.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -79,27 +80,36 @@ public class HavannahLogic {
 	private static final String W = "W"; // White hand
 	private static final String B = "B"; // Black hand
 	
-	public int distance(ImmutableList<Integer> p, ImmutableList<Integer> q) {
-		//distance([0 0 0], [1 0 -1]) => 2
-		//this.points.contains(p); 
-		//this.points.contains(q); 
-		// don't check here, check when added to black or white
-		int x1 = p.get(0);
-		int y1 = p.get(1);
-		int z1 = p.get(2);
-		int x2 = q.get(0);
-		int y2 = q.get(1);
-		int z2 = q.get(2);
+	/* 
+	 * There is NO need to check a point's validity with "points.contains(p)"
+	 * verify(VerifyMove) will filter invalid points before calling these functions below
+	 * 
+	 * 1. distance(p, q)
+	 * 2. isNeighbor(p, q)
+	 * 3. getNeighborsOf(p)
+	 * 4. isCorner(p)
+	 * 5. isSide(p)
+	 * 
+	 */
+	public int distance(List<Integer> pointOrigin, List<Integer> pointOrigin2) {
+		// distance([0 0 0], [1 0 -1]) => 2
+		int x1 = pointOrigin.get(0);
+		int y1 = pointOrigin.get(1);
+		int z1 = pointOrigin.get(2);
+		int x2 = pointOrigin2.get(0);
+		int y2 = pointOrigin2.get(1);
+		int z2 = pointOrigin2.get(2);
 		return Math.abs(x1-x2) + Math.abs(y1-y2) + Math.abs(z1-z2);
 	}
 	
-	public boolean isNeighbor(ImmutableList<Integer> p, ImmutableList<Integer> q) {
+	public boolean isNeighbor(List<Integer> p, List<Integer> q) {
 		//isNeighbor([0 0 0], [1 0 -1]) => true
-		//this.points.contains(p); // don't check here, check when added to black or white
 		return distance(p, q) == 2;
 	}
 	
-	public List<ImmutableList<Integer>> getNeighborsOf(ImmutableList<Integer> p) {
+	public List<ImmutableList<Integer>> getNeighborsOf(List<Integer> p) {
+		//Invalid points will never appear here. They can't pass the first filter
+		
 		// normally => [6 points]
 		// corner => [3 points]
 		// side => [4 points]
@@ -126,12 +136,12 @@ public class HavannahLogic {
 		return neighbors;
 	}
 	
-	public boolean isCornerPoint(ImmutableList<Integer> p) {
+	public boolean isCornerPoint(List<Integer> p) {
 		//this.points.contains(p); // don't check here, check when added to black or white
 		return p.contains(4) && p.contains(-4) && p.contains(0);
 	}
 	
-	public boolean isSidePoint(ImmutableList<Integer> p) {
+	public boolean isSidePoint(List<Integer> p) {
 		//this.points.contains(p); // don't check here, check when added to black or white
 		return p.contains(4) ^ p.contains(-4);
 	}
@@ -171,6 +181,7 @@ public class HavannahLogic {
 	void checkMoveIsLegal(VerifyMove verifyMove) {
 		List<Operation> lastMove = verifyMove.getLastMove();
 		Map<String, Object> lastState = verifyMove.getLastState();
+		Map<String, Object> State = verifyMove.getState();
 		// Check the operations are as expected.
 		List<Operation> expectedOperations = getExpectedOperations(
 				lastState, lastMove, verifyMove.getPlayerIds(), verifyMove.getLastMovePlayerId());
@@ -184,7 +195,18 @@ public class HavannahLogic {
 	}
 	
 	public VerifyMoveDone verify(VerifyMove verifyMove) {
-		return new VerifyMoveDone();
+		try {
+	    	checkMoveIsLegal(verifyMove);
+	    	return new VerifyMoveDone();
+	    } catch (Exception e) {
+	    	return new VerifyMoveDone(verifyMove.getLastMovePlayerId(), e.getMessage());
+	    }
+	}
+	
+	private void check(boolean val, Object... debugArguments) {
+		if (!val) {
+			throw new RuntimeException("We have a hacker! debugArguments="+ Arrays.toString(debugArguments));
+		}
 	}
 	
 	public static void main(String[] args) {
@@ -192,9 +214,6 @@ public class HavannahLogic {
 		ImmutableList<Integer> p = ImmutableList.of(4, -1, -3);
 		h.getNeighborsOf(p);
 	}
-	
-
-
 }
 
 
@@ -216,13 +235,35 @@ class ClusterLabel {
 		this.numSide = numSide;
 	}
 	
-	public ClusterLabel merge(ClusterLabel c) {
+	/*---------------------------------------------------------------------
+	 * Illustration of cluster merge
+	 *---------------------------------------------------------------------
+	 * X is new added point;
+	 * A B are cluster labels of 2 neighbors that are held by player;
+	 * C is newly created cluster label
+	 * 
+	 *  A 0      C 0
+	 * 0 X B => 0 X C
+	 *  0 0      0 0
+	 *  
+	 *---------------------------------------------------------------------
+	 * X is new added point;
+	 * A B C are cluster labels of 3 neighbors that are held by player;
+	 * C is newly created cluster label
+	 * 
+	 *  A 0      D 0
+	 * 0 X B => 0 X D
+	 *  C 0      D 0
+	 *  
+	 *---------------------------------------------------------------------
+	 */
+	public ClusterLabel merge(ClusterLabel c) {// merge 2 cluster labels
 		int totalNumCorner = this.numCorner + c.numCorner;
 		int totalNumSide = this.numSide + c.numSide;
 		return new ClusterLabel(totalNumCorner, totalNumSide);
 	}
 	
-	public ClusterLabel merge(ClusterLabel c1, ClusterLabel c2) {
+	public ClusterLabel merge(ClusterLabel c1, ClusterLabel c2) {// merge 3 cluster labels
 		int totalNumCorner = this.numCorner + c1.numCorner + c2.numCorner;
 		int totalNumSide = this.numSide + c1.numSide + c2.numSide;
 		return new ClusterLabel(totalNumCorner, totalNumSide);
