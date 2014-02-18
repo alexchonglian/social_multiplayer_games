@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.havannah.client.GameApi.Operation;
 import org.havannah.client.GameApi.VerifyMove;
@@ -78,21 +77,24 @@ public class HavannahLogic {
 	public List<ImmutableList<Integer>> points;// [[0 0 0],[-1 0 1],[0 -1 1]]
 	
 	// must be a mutable data structure. keep adding new pieces
-	// keep in client side. only send { B: points, W: points }
-	public Map<ImmutableList<Integer>, ClusterLabel> black;// {[0 0 0]: c1, [-1 0 1]:c2}
-	public Map<ImmutableList<Integer>, ClusterLabel> white;// {[0 -1 1]:c3}
+	// keep in client side. only send { B: points->clusters, W: points->clusters }
+	public Map<ImmutableList<Integer>, Cluster> blackPointClusterMapping;// {[0 0 0]: c1, [-1 0 1]:c2}
+	public Map<ImmutableList<Integer>, Cluster> whitePointClusterMapping;// {[0 -1 1]:c3}
+	
+	public Map<ImmutableList<Integer>, List<ImmutableList<Integer>>> blackPointAdjacency;
+	public Map<ImmutableList<Integer>, List<ImmutableList<Integer>>> whitePointAdjacency;
+	
+	public Map<String, List<ImmutableList<Integer>>> boardState;//{W:[p1, p2], B:[p3, p4]}
 	
 	private static final String W = "W"; // White hand
 	private static final String B = "B"; // Black hand
+	
 	private final ImmutableMap<String, Object> emptyState = ImmutableMap.<String, Object>of();
 
 	
 	/* 
 	 * verify(VerifyMove) will filter invalid points before calling these functions below
 	 * For them, NO need to check point validity by "points.contains(p)"
-	 *  |
-	 *  |
-	 *  V
 	 * 1. distance(p, q)
 	 * 2. isNeighbor(p, q)
 	 * 3. getNeighborsOf(p)
@@ -100,14 +102,14 @@ public class HavannahLogic {
 	 * 5. isSide(p)
 	 * 
 	 */
-	public int distance(List<Integer> pointOrigin, List<Integer> pointOrigin2) {
+	public int distance(List<Integer> p, List<Integer> q) {
 		// distance([0 0 0], [1 0 -1]) => 2
-		int x1 = pointOrigin.get(0);
-		int y1 = pointOrigin.get(1);
-		int z1 = pointOrigin.get(2);
-		int x2 = pointOrigin2.get(0);
-		int y2 = pointOrigin2.get(1);
-		int z2 = pointOrigin2.get(2);
+		int x1 = p.get(0);
+		int y1 = p.get(1);
+		int z1 = p.get(2);
+		int x2 = q.get(0);
+		int y2 = q.get(1);
+		int z2 = q.get(2);
 		return Math.abs(x1-x2) + Math.abs(y1-y2) + Math.abs(z1-z2);
 	}
 	
@@ -126,9 +128,8 @@ public class HavannahLogic {
 		int y = p.get(1);
 		int z = p.get(2);
 		
-		int[][] candidates = {{x+1,y-1,z},{x-1,y+1,z},
-				{x+1,y,z-1},{x-1,y,z+1},
-				{x,y+1,z-1},{x,y-1,z+1},};
+		int[][] candidates = {{x+1,y-1,z},{x-1,y+1,z}, {x+1,y,z-1},{x-1,y,z+1},
+				{x,y+1,z-1},{x,y-1,z+1}};
 		
 		List<ImmutableList<Integer>> neighbors = new ArrayList<ImmutableList<Integer>>();
 		
@@ -147,12 +148,12 @@ public class HavannahLogic {
 	
 	public boolean isCornerPoint(List<Integer> p) {
 		//this.points.contains(p); // don't check here, check when added to black or white
-		return p.contains(4) && p.contains(-4) && p.contains(0);
+		return p.contains(this.boardSize - 1) && p.contains(- this.boardSize + 1) && p.contains(0);
 	}
 	
 	public boolean isSidePoint(List<Integer> p) {
 		//this.points.contains(p); // don't check here, check when added to black or white
-		return p.contains(4) ^ p.contains(-4);
+		return p.contains(this.boardSize - 1) ^ p.contains(- this.boardSize + 1);
 	}
 	
 
@@ -165,8 +166,8 @@ public class HavannahLogic {
 	public HavannahLogic(int boardSize) {
 		this.boardSize = boardSize;
 		this.points = createPoints();
-		this.black = new HashMap<ImmutableList<Integer>, ClusterLabel>();
-		this.white = new HashMap<ImmutableList<Integer>, ClusterLabel>();
+		this.blackPointClusterMapping = new HashMap<ImmutableList<Integer>, Cluster>();
+		this.whitePointClusterMapping = new HashMap<ImmutableList<Integer>, Cluster>();
 	}
 	
 	public List<ImmutableList<Integer>> createPoints() {
@@ -187,16 +188,96 @@ public class HavannahLogic {
 		return points;
 	}
 	
+	public void updatePointClusterMappingAndPointAdjacency () {
+		return;
+	}
+	
+	
+
+	public List<ImmutableList<Integer>> findCycleFor(String playerStr, 
+			ImmutableList<Integer> newPoint) {
+		/*  Call this function when adding new points and think it's likely to be a loop
+		 * 
+		 *  Definition of cycle in Havannah:
+		 *  
+		 *  Exists a path [P1, P2, ... Pn] in one player's points such that
+		 *  For i in [1,2,3 .. n]:
+		 *  	neighbor(pi,p(i+1)mod n) && NOT neighbor(pi,p(i+2)mod n)
+		 * 
+		 *  This Algorithm uses Depth First Search to detect cycle in one player's pieces
+		 *  Use stack!
+		 */
+		Map<ImmutableList<Integer>, List<ImmutableList<Integer>>> playerPointAdjacency;
+		if (playerStr == W) {
+			playerPointAdjacency = this.whitePointAdjacency;
+		} else if (playerStr == B) {
+			playerPointAdjacency = this.blackPointAdjacency;
+		} else {
+			throw new IllegalArgumentException("playerStr must be W or B");
+		}
+		// make a copy of playerPointAdjacency
+		// this is not the adjacency of all points!!!
+		// this is adjacency of only one player's pieces!!!
+		Map<ImmutableList<Integer>, List<ImmutableList<Integer>>> neighborLeft = null;
+		// neighborLeft = playerPointAdjacency.deepCopy()
+		neighborLeft = new HashMap<ImmutableList<Integer>, List<ImmutableList<Integer>>>();
+		
+		
+
+		List<ImmutableList<Integer>> stack  = new ArrayList<ImmutableList<Integer>>();
+		stack.add(newPoint);
+		
+		while (stack.size() != 0) {// while stack not empty
+			// For stack, pop() and push() => so we delete last
+			// For neighborLeft, only pop() => we can delete first => which is easier
+			// stack[i],stack[i-1] must be neighbor
+			// stack[i],stack[i-2] must not be neighbor
+			// but java.util.Stack doesn't support peeking the last two element
+			// Sad, I have to simulate Stack using List and remove() when pop()
+			
+			ImmutableList<Integer> top = stack.get(stack.size() - 1);//pop top of stack
+			stack.remove(stack.size() - 1);
+			
+			if (neighborLeft.get(top).size() == 0) {
+				// if top has no neighbor left, then pop
+				stack.remove(stack.size() - 1);
+				
+			} else {
+				// check top's neighbor, if valid then push to stack
+				ImmutableList<Integer> candidate = neighborLeft.get(top).get(1);// pop candidate
+				neighborLeft.get(top).remove(candidate);// and delete
+				
+				if (stack.size() == 1) {
+					
+				} else {// stack.size() must be greater than 1
+					ImmutableList<Integer> previous = stack.get(stack.size() - 2 );
+					if (candidate != top && candidate != previous
+							&& !playerPointAdjacency.get(candidate).contains(previous)) {
+						
+						if (stack.contains(candidate)) {
+							// if candidate is already in stack[:-2], then cycle detected!
+							// better if remove points before the first appearance of candidate
+							stack.add(candidate);
+						}
+						else {stack.add(candidate);}// if not keep searching
+						
+					}
+				}
+			}
+			
+		}
+		return null;
+	}
 	
 	// update black and white players' pieces collection after player make move
 	// only called after making sure that the position is valid and not occupied by both
 	public void addPointToPlayer(ImmutableList<Integer> newPoint, String playerStr)
 			throws Exception {
-		Map<ImmutableList<Integer>, ClusterLabel> playerCollection;
+		Map<ImmutableList<Integer>, Cluster> playerCollection;
 		if (playerStr == W) {
-			playerCollection = this.white;
+			playerCollection = this.whitePointClusterMapping;
 		} else if (playerStr == B) {
-			playerCollection = this.black;
+			playerCollection = this.blackPointClusterMapping;
 		} else {
 			throw new IllegalArgumentException("playerStr must be W or B");
 		}
@@ -204,10 +285,10 @@ public class HavannahLogic {
 		// see if neighbors are in connected component (connected if has cluster label)
 		List<ImmutableList<Integer>> neighborsOfNewPoint = getNeighborsOf(newPoint);
 		// create map that stores neighbors that has connection (has cluster label)
-		Map<ImmutableList<Integer>, ClusterLabel> connectedNeighbors = new HashMap();
+		Map<ImmutableList<Integer>, Cluster> connectedNeighbors = new HashMap();
 		
 		for (ImmutableList<Integer> neighborPt: neighborsOfNewPoint) {
-			ClusterLabel label = playerCollection.get(neighborPt);
+			Cluster label = playerCollection.get(neighborPt);
 			if ( label != null ) {
 				connectedNeighbors.put(neighborPt, label);
 			}
@@ -225,7 +306,7 @@ public class HavannahLogic {
 			 * 0 X 0 => 0 A 0
 			 *  0 0      0 0
 			 */
-				playerCollection.put(newPoint, new ClusterLabel(ptIsCorner, ptIsSide));
+				playerCollection.put(newPoint, new Cluster(ptIsCorner, ptIsSide));
 				break;
 				
 				
@@ -236,7 +317,7 @@ public class HavannahLogic {
 			 *  0 0      0 0
 			 */
 				for (ImmutableList<Integer> pt: connectedNeighbors.keySet()) {
-					ClusterLabel cluster1 = playerCollection.get(pt);
+					Cluster cluster1 = playerCollection.get(pt);
 					cluster1.addCornerAndSide(ptIsCorner, ptIsSide);
 					playerCollection.put(pt, cluster1);
 				}
@@ -294,6 +375,9 @@ public class HavannahLogic {
 	void checkMoveIsLegal(VerifyMove verifyMove) {
 		List<Operation> lastMove = verifyMove.getLastMove();
 		Map<String, Object> lastState = verifyMove.getLastState();
+//		if (lastState = this.boardState || lastMove not in this.boardState) {
+//			then legal!
+//		}
 		
 	}
 	
@@ -334,12 +418,15 @@ public class HavannahLogic {
 }
 
 
-class ClusterLabel {
+class Cluster {
 	private static int idAccumulator = 0;//make sure unique id
 	private int id; 
 	private int numCorner;
 	private int numSide;
 	
+	public boolean equals(Cluster c) {
+		return this.id == c.id && this.numCorner == c.numCorner && this.numSide == c.numSide;
+	}
 	
 	// Getters and Setters
 	public int getId() {
@@ -361,12 +448,12 @@ class ClusterLabel {
 	
 	
 	// Contructors
-	public ClusterLabel() {
+	public Cluster() {
 		this(0, 0);
 	}
 	
-	public ClusterLabel (int numCorner, int numSide) {
-		this.id = ClusterLabel.idAccumulator++;
+	public Cluster (int numCorner, int numSide) {
+		this.id = Cluster.idAccumulator++;
 		this.numCorner = numCorner;
 		this.numSide = numSide;
 	}
@@ -393,16 +480,16 @@ class ClusterLabel {
 	 *  
 	 *---------------------------------------------------------------------
 	 */
-	public ClusterLabel merge(ClusterLabel c) {// merge 2 cluster labels
+	public Cluster merge(Cluster c) {// merge 2 cluster labels
 		int totalNumCorner = this.numCorner + c.numCorner;
 		int totalNumSide = this.numSide + c.numSide;
-		return new ClusterLabel(totalNumCorner, totalNumSide);
+		return new Cluster(totalNumCorner, totalNumSide);
 	}
 	
-	public ClusterLabel merge(ClusterLabel c1, ClusterLabel c2) {// merge 3 cluster labels
+	public Cluster merge(Cluster c1, Cluster c2) {// merge 3 cluster labels
 		int totalNumCorner = this.numCorner + c1.numCorner + c2.numCorner;
 		int totalNumSide = this.numSide + c1.numSide + c2.numSide;
-		return new ClusterLabel(totalNumCorner, totalNumSide);
+		return new Cluster(totalNumCorner, totalNumSide);
 	}
 	
 }
