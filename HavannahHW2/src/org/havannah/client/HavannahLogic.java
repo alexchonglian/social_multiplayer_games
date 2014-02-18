@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Stack;
 
 import org.havannah.client.GameApi.Operation;
@@ -219,28 +220,42 @@ public class HavannahLogic {
 		// make a copy of playerPointAdjacency
 		// this is not the adjacency of all points!!!
 		// this is adjacency of only one player's pieces!!!
-		Map<ImmutableList<Integer>, Stack<ImmutableList<Integer>>> neighborLeft = null;
+		Map<ImmutableList<Integer>, Stack<ImmutableList<Integer>>> neighborLeftHashMap = null;
 		// neighborLeft = playerPointAdjacency.deepCopy()
-		neighborLeft = new HashMap<ImmutableList<Integer>, Stack<ImmutableList<Integer>>>();
-		
-		
+		neighborLeftHashMap = new HashMap<ImmutableList<Integer>, Stack<ImmutableList<Integer>>>();
+
+	    for (Entry<ImmutableList<Integer>, List<ImmutableList<Integer>>> entry
+	    		: playerPointAdjacency.entrySet()) { 
+	    	// Sorry i'm not familiar with Java
+	    	// not sure if it's deep copy or just copy reference, so I wrote it
+	    	ImmutableList<Integer> pt = entry.getKey();
+	    	List<ImmutableList<Integer>> adjacentPtsList = entry.getValue();
+	        Stack<ImmutableList<Integer>> adjacentPtsStack = null;
+	        adjacentPtsStack = new Stack<ImmutableList<Integer>>();
+	        
+	        for (ImmutableList<Integer> adjPt: adjacentPtsList) {
+	        	adjacentPtsStack.push(adjPt);
+	        }
+	        neighborLeftHashMap.put(pt, adjacentPtsStack);
+	    }
 
 		Stack<ImmutableList<Integer>> stack  = new Stack<ImmutableList<Integer>>();
 		stack.add(newPoint);
 		
 		while (stack.empty()) {// while stack not empty
+			// Find Cycle with Depth First Search!
 			// stack[i],stack[i-1] must be neighbor
 			// stack[i],stack[i-2] must not be neighbor
 			
 			ImmutableList<Integer> top = stack.pop();
 			
-			if (neighborLeft.get(top).empty()) {
+			if (neighborLeftHashMap.get(top).empty()) {
 				// if top has no neighbor left, then keep popping
 				stack.pop();
 				
 			} else {
 				// check top's neighbor, if valid then push to stack
-				ImmutableList<Integer> candidate = neighborLeft.get(top).pop();
+				ImmutableList<Integer> candidate = neighborLeftHashMap.get(top).pop();
 				
 				if (stack.size() == 1) {
 					
@@ -267,10 +282,12 @@ public class HavannahLogic {
 		return null;
 	}
 	
-	// update black and white players' pieces collection after player make move
-	// only called after making sure that the position is valid and not occupied by both
+	
 	public void addPointToPlayer(ImmutableList<Integer> newPoint, String playerStr)
 			throws Exception {
+		// update black and white players' pieces collection after player make move
+		// only called after making sure that the position is valid and not occupied by both
+		
 		Map<ImmutableList<Integer>, Cluster> playerCollection;
 		if (playerStr == W) {
 			playerCollection = this.whitePointClusterMapping;
@@ -373,6 +390,9 @@ public class HavannahLogic {
 	void checkMoveIsLegal(VerifyMove verifyMove) {
 		List<Operation> lastMove = verifyMove.getLastMove();
 		Map<String, Object> lastState = verifyMove.getLastState();
+		List<Map<String, Object>> playersInfo = verifyMove.getPlayersInfo();
+		int lastMovePlayerId = verifyMove.getLastMovePlayerId();
+//		if i'm black then he is white
 //		if (lastState = this.boardState || lastMove not in this.boardState) {
 //			then legal!
 //		}
