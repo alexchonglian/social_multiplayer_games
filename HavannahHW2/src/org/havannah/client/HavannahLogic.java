@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 import org.havannah.client.GameApi.Operation;
 import org.havannah.client.GameApi.VerifyMove;
@@ -218,54 +219,51 @@ public class HavannahLogic {
 		// make a copy of playerPointAdjacency
 		// this is not the adjacency of all points!!!
 		// this is adjacency of only one player's pieces!!!
-		Map<ImmutableList<Integer>, List<ImmutableList<Integer>>> neighborLeft = null;
+		Map<ImmutableList<Integer>, Stack<ImmutableList<Integer>>> neighborLeft = null;
 		// neighborLeft = playerPointAdjacency.deepCopy()
-		neighborLeft = new HashMap<ImmutableList<Integer>, List<ImmutableList<Integer>>>();
+		neighborLeft = new HashMap<ImmutableList<Integer>, Stack<ImmutableList<Integer>>>();
 		
 		
 
-		List<ImmutableList<Integer>> stack  = new ArrayList<ImmutableList<Integer>>();
+		Stack<ImmutableList<Integer>> stack  = new Stack<ImmutableList<Integer>>();
 		stack.add(newPoint);
 		
-		while (stack.size() != 0) {// while stack not empty
-			// For stack, pop() and push() => so we delete last
-			// For neighborLeft, only pop() => we can delete first => which is easier
+		while (stack.empty()) {// while stack not empty
 			// stack[i],stack[i-1] must be neighbor
 			// stack[i],stack[i-2] must not be neighbor
-			// but java.util.Stack doesn't support peeking the last two element
-			// Sad, I have to simulate Stack using List and remove() when pop()
 			
-			ImmutableList<Integer> top = stack.get(stack.size() - 1);//pop top of stack
-			stack.remove(stack.size() - 1);
+			ImmutableList<Integer> top = stack.pop();
 			
-			if (neighborLeft.get(top).size() == 0) {
-				// if top has no neighbor left, then pop
-				stack.remove(stack.size() - 1);
+			if (neighborLeft.get(top).empty()) {
+				// if top has no neighbor left, then keep popping
+				stack.pop();
 				
 			} else {
 				// check top's neighbor, if valid then push to stack
-				ImmutableList<Integer> candidate = neighborLeft.get(top).get(1);// pop candidate
-				neighborLeft.get(top).remove(candidate);// and delete
+				ImmutableList<Integer> candidate = neighborLeft.get(top).pop();
 				
 				if (stack.size() == 1) {
 					
 				} else {// stack.size() must be greater than 1
+					
 					ImmutableList<Integer> previous = stack.get(stack.size() - 2 );
+					
 					if (candidate != top && candidate != previous
 							&& !playerPointAdjacency.get(candidate).contains(previous)) {
 						
 						if (stack.contains(candidate)) {
 							// if candidate is already in stack[:-2], then cycle detected!
 							// better if remove points before the first appearance of candidate
-							stack.add(candidate);
+							stack.push(candidate);
+							return stack;
 						}
-						else {stack.add(candidate);}// if not keep searching
+						else {stack.push(candidate);}// if not keep searching
 						
 					}
 				}
 			}
-			
 		}
+		
 		return null;
 	}
 	
