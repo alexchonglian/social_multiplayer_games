@@ -48,11 +48,11 @@ while stack != []:
 			if cand != current: stack.append(cand)
 		elif cand != current and cand != stack[-2] and (not is_neighbor(stack[-2], cand)):
 			#make sure candidate is no neighbor with stack[-2]
-			if cand in stack[:-2]: print stack
+			if cand in stack[:-2]: print stack+[cand]
 			stack.append(cand)
 
 
-
+#>>> ['A', 'B', 'F', 'G', 'H', 'D', 'A']
 
 
 
