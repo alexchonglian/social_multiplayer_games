@@ -11,9 +11,13 @@ import java.util.Stack;
 import org.havannah.client.GameApi.Operation;
 import org.havannah.client.GameApi.VerifyMove;
 import org.havannah.client.GameApi.VerifyMoveDone;
+import org.havannah.client.GameApi.Set;
+import org.havannah.client.GameApi.SetTurn;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 public class HavannahLogic {
 	
@@ -88,6 +92,10 @@ public class HavannahLogic {
 	
 	private static final String W = "W"; // White hand
 	private static final String B = "B"; // Black hand
+	
+	private boolean forkFound = false;
+	private boolean bridgeFound = false;
+	private boolean cycleFound = false;
 	
 	private final ImmutableMap<String, Object> emptyState = ImmutableMap.<String, Object>of();
 
@@ -192,8 +200,6 @@ public class HavannahLogic {
 	public void updatePointAdjacency () {
 		return;
 	}
-	
-	
 
 	public List<ImmutableList<Integer>> findCycleFor(String playerStr, 
 			ImmutableList<Integer> newPoint) {
@@ -282,7 +288,7 @@ public class HavannahLogic {
 	}
 	
 	
-	public void addPointToPlayer(ImmutableList<Integer> newPoint, String playerStr)
+	public String addPointToPlayer(ImmutableList<Integer> newPoint, String playerStr)
 			throws Exception {
 		// update black and white players' pieces collection after player make move
 		// only called after making sure that the position is valid and not occupied by both
@@ -311,8 +317,9 @@ public class HavannahLogic {
 		int ptIsCorner = this.isCornerPoint(newPoint)? 1:0;
 		int ptIsSide = this.isSidePoint(newPoint)? 1:0;
 		
-		updatePointClusterMapping(newCluster, list<old Clusters>);
-		updatePointAdjacency(newPoint, list<old Points>);
+		// updatePointClusterMapping(newCluster, list<old Clusters>);
+		
+		// updatePointAdjacency(newPoint, list<old Points>);
 		
 		
 		
@@ -388,20 +395,21 @@ public class HavannahLogic {
 			// more than 7 neighbor?!
 				throw new Exception();
 		}
+		
+		if (forkFound || bridgeFound || cycleFound) {
+			return playerStr;
+		} else {
+			return null;
+		}
 
 	}
 	
-	void checkMoveIsLegal(VerifyMove verifyMove) {
-		List<Operation> lastMove = verifyMove.getLastMove();
-		Map<String, Object> lastState = verifyMove.getLastState();
-		List<Map<String, Object>> playersInfo = verifyMove.getPlayersInfo();
-		int lastMovePlayerId = verifyMove.getLastMovePlayerId();
-//		if i'm black then he is white
-//		if (lastState = this.boardState || lastMove not in this.boardState) {
-//			then legal!
-//		}
-		
+	<T> List<T> concat(List<T> a, List<T> b) {
+	    return Lists.newArrayList(Iterables.concat(a, b));
 	}
+	
+
+	
 	
 	public VerifyMoveDone verify(VerifyMove verifyMove) {
 		try {
@@ -412,21 +420,38 @@ public class HavannahLogic {
 	    }
 	}
 	
+	void checkMoveIsLegal(VerifyMove verifyMove) {
+	    // Checking the operations are as expected.
+		List<Operation> lastMove = verifyMove.getLastMove();
+	    Map<String, Object> lastState = verifyMove.getLastState();
+	    List<Integer> playerIds = verifyMove.getPlayerIds();
+	    // is he black or white
+	    check(((List<ImmutableList<Integer>>) lastState.get(W)).contains(lastMove));
+	    check(expectedOperations.equals(lastMove), expectedOperations, lastMove);
+	    // We use SetTurn, so we don't need to check that the correct player did the move.
+	    // However, we do need to check the first move is done by the white player (and then in the
+	    // first MakeMove we'll send SetTurn which will guarantee the correct player send MakeMove).
+	    if (verifyMove.getLastState().isEmpty()) {
+	      check(verifyMove.getLastMovePlayerId() == verifyMove.getPlayerIds().get(0));
+	    }
+	}
+	
 	private void check(boolean val, Object... debugArguments) {
 		if (!val) {
 			throw new RuntimeException("We have a hacker! debugArguments="+ Arrays.toString(debugArguments));
 		}
 	}
 	
-//	private VerifyMove move(int lastMovePlayerId, Map<String, Object> state, List<Operation> lastMove) {
-//		return new VerifyMove(playersInfo,state,emptyState, lastMove, lastMovePlayerId, ImmutableMap.<Integer, Integer>of());
-//	}
-//	VerifyMove n = new VerifyMove(List<Map<String, Object>> playersInfo,
-//	        Map<String, Object> state,
-//	        Map<String, Object> lastState,
-//	        List<Operation> lastMove,
-//	        int lastMovePlayerId,
-//	        Map<Integer, Integer> playerIdToNumberOfTokensInPot);
+	List<Operation> getMoveInitial(List<Integer> playerIds) {
+	    int whitePlayerId = playerIds.get(0);
+	    int blackPlayerId = playerIds.get(1);
+	    List<Operation> operations = Lists.newArrayList();
+	    operations.add(new SetTurn(whitePlayerId));
+	    operations.add(new Set(W, new ArrayList<ImmutableList<Integer>>()));
+	    operations.add(new Set(B, new ArrayList<ImmutableList<Integer>>()));
+	    return operations;
+	}
+	
 	
 	public static void main(String[] args) {
 		HavannahLogic h = new HavannahLogic();
