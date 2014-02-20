@@ -12,6 +12,7 @@ import org.havannah.client.GameApi.VerifyMove;
 import org.havannah.client.GameApi.VerifyMoveDone;
 import org.havannah.client.GameApi.Operation;
 import org.havannah.client.GameApi.Set;
+import org.havannah.client.GameApi.SetTurn;
 import org.havannah.client.GameApi.EndGame;
 import org.havannah.client.GameApi.ManipulateState;
 import org.havannah.client.GameApi.ManipulationDone;
@@ -75,9 +76,6 @@ public class HavannahLogicTest {
 		int expectedSize = (int) (3*Math.pow(bs, 2) - 3*bs + 1);
 		assertEquals(havannahLogic.points.size(), expectedSize);
 	}
-	
-	
-
 	
 	private final List<ImmutableList<Integer>> neiborsOfPointOrigin = 
 	  		ImmutableList.<ImmutableList<Integer>>of(// points around [0 0 0]
@@ -179,6 +177,11 @@ public class HavannahLogicTest {
 	}
 	
 	@Test
+	public void testAddPointToPlayer0Neighbor() {
+		
+	}
+	
+	@Test
 	public void testAddPointToPlayer1Neighbor() {
 		
 	}
@@ -187,7 +190,6 @@ public class HavannahLogicTest {
 	public void testAddPointToPlayer2Neighbors() {
 		
 	}
-	
 	@Test
 	public void testAddPointToPlayer3Neighbors() {
 		
@@ -209,15 +211,6 @@ public class HavannahLogicTest {
 	}
 	
 	@Test
-	public void testVerifyMoveStuff() {
-		//Russian has their troops on the right position?
-		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
-	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
-	    assertEquals(0, verifyDone.getHackerPlayerId());
-	}
-	
-	
-	@Test
 	public void testInitialMove() {
 		assertMoveOk(move(wId, emptyState, getInitialOperations()));
 	}
@@ -228,17 +221,29 @@ public class HavannahLogicTest {
 	}
 
 	
-	
+	private final Map<String, Object> someState = ImmutableMap.<String, Object> of();
 	
 
+	@Test
+	public void testWhiteAddPieceToEmpty() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
+	    assertEquals(verifyMove.getLastMovePlayerId(), verifyDone.getHackerPlayerId());
+	}
+	
+	@Test
+	public void testBlackAddPieceToEmpty() {
+		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
+	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
+	    assertHacker(move(wId, emptyState, getInitialOperations()));
+	}
+	
 	@Test
 	public void testIllegalMoveYYY() {
 		VerifyMove verifyMove = new VerifyMove(bId, playersInfo, bInfo, bInfo, null, bId);
 	    VerifyMoveDone verifyDone = new havannahLogic().verify(verifyMove);
 	    assertEquals(verifyMove.getLastMovePlayerId(), verifyDone.getHackerPlayerId());
 	}
-	
-	
 
 
 
@@ -252,29 +257,29 @@ public class HavannahLogicTest {
 
 	// The order of operations: turn, isCheater, W, B, M, claim, C0...C51
 	private final List<Operation> claimOfW = ImmutableList.<Operation> of(
-			new Set(TURN, B), new Set(W, getIndicesInRange(0, 8)), new Set(M,
+			new SetTurn(bId), new Set(W, getIndicesInRange(0, 8)), new Set(M,
 					getIndicesInRange(9, 10)),
 			new Set(CLAIM, ImmutableList.of("2cards", "rankA")));
 
 	private final List<Operation> claimOfB = ImmutableList.<Operation> of(
-			new Set(TURN, W), new Set(B, getIndicesInRange(11, 48)), new Set(M,
+			new SetTurn(wId), new Set(B, getIndicesInRange(11, 48)), new Set(M,
 					getIndicesInRange(49, 51)),
 			new Set(CLAIM, ImmutableList.of("3cards", "rankJ")));
 
 	private final List<Operation> illegalClaimWithWrongCards = ImmutableList
-			.<Operation> of(new Set(TURN, B), new Set(W,
+			.<Operation> of(new SetTurn(bId), new Set(W,
 					getIndicesInRange(0, 8)),
 					new Set(M, getIndicesInRange(9, 10)), new Set(CLAIM,
 							ImmutableList.of("3cards", "rankA")));
 
 	private final List<Operation> illegalClaimWithWrongW = ImmutableList
-			.<Operation> of(new Set(TURN, B), new Set(W,
+			.<Operation> of(new SetTurn(bId), new Set(W,
 					getIndicesInRange(0, 7)),
 					new Set(M, getIndicesInRange(9, 10)), new Set(CLAIM,
 							ImmutableList.of("2cards", "rankA")));
 
 	private final List<Operation> illegalClaimWithWrongM = ImmutableList
-			.<Operation> of(new Set(TURN, B), new Set(W,
+			.<Operation> of(new SetTurn(bId), new Set(W,
 					getIndicesInRange(0, 8)),
 					new Set(M, getIndicesInRange(8, 10)), new Set(CLAIM,
 							ImmutableList.of("2cards", "rankA")));
@@ -316,12 +321,6 @@ public class HavannahLogicTest {
 
 	private List<Operation> getInitialOperations() {
 		return havannahLogic.getInitialMove(wId, bId);
-	}
-
-	@Test
-	public void testGetInitialOperationsSize() {
-		assertEquals(4 + 52 + 1 + 52, havannahLogic.getInitialMove(wId, bId)
-				.size());
 	}
 
 
@@ -468,7 +467,7 @@ public class HavannahLogicTest {
 				ImmutableList.of("2cards", "rankA"));
 		// The order of operations: turn, isCheater, W, B, M, claim, C0...C51
 		List<Operation> claimByW = ImmutableList.<Operation> of(
-				new Set(TURN, B),
+				new SetTurn(bId),
 				new Set(W, getIndicesInRange(4, 10)),
 				new Set(M, concat(getIndicesInRange(50, 51),
 						getIndicesInRange(0, 3))),

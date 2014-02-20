@@ -3,6 +3,7 @@ package org.havannah.client;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -292,12 +293,15 @@ public class HavannahLogic {
 			throws Exception {
 		// update black and white players' pieces collection after player make move
 		// only called after making sure that the position is valid and not occupied by both
+		Map<ImmutableList<Integer>, Cluster> playerPointClusterMapping;
+		Map<ImmutableList<Integer>, List<ImmutableList<Integer>>> playerPointAdjacency;
 		
-		Map<ImmutableList<Integer>, Cluster> playerCollection;
 		if (playerStr == W) {
-			playerCollection = this.whitePointClusterMapping;
+			playerPointClusterMapping = this.whitePointClusterMapping;
+			playerPointAdjacency = this.whitePointAdjacency;
 		} else if (playerStr == B) {
-			playerCollection = this.blackPointClusterMapping;
+			playerPointClusterMapping = this.blackPointClusterMapping;
+			playerPointAdjacency = this.blackPointAdjacency;
 		} else {
 			throw new IllegalArgumentException("playerStr must be W or B");
 		}
@@ -305,10 +309,10 @@ public class HavannahLogic {
 		// see if neighbors are in connected component (connected if has cluster label)
 		List<ImmutableList<Integer>> neighborsOfNewPoint = getNeighborsOf(newPoint);
 		// create map that stores neighbors that has connection (has cluster label)
-		Map<ImmutableList<Integer>, Cluster> neighborToClusterMapping = new HashMap();
+		Map<ImmutableList<Integer>, Cluster> neighborToClusterMapping = new HashMap<ImmutableList<Integer>, Cluster>();
 		
 		for (ImmutableList<Integer> neighborPt: neighborsOfNewPoint) {
-			Cluster clusterLabel = playerCollection.get(neighborPt);
+			Cluster clusterLabel = playerPointClusterMapping.get(neighborPt);
 			if ( clusterLabel != null ) {
 				neighborToClusterMapping.put(neighborPt, clusterLabel);
 			}
@@ -317,83 +321,38 @@ public class HavannahLogic {
 		int ptIsCorner = this.isCornerPoint(newPoint)? 1:0;
 		int ptIsSide = this.isSidePoint(newPoint)? 1:0;
 		
-		// updatePointClusterMapping(newCluster, list<old Clusters>);
+		Cluster newClusterLabel = new Cluster(ptIsCorner, ptIsSide);
 		
-		// updatePointAdjacency(newPoint, list<old Points>);
+		HashSet<Cluster> clusterSet = new HashSet<Cluster>(neighborToClusterMapping.values());
 		
+		for (Cluster c: clusterSet) {
+			newClusterLabel = newClusterLabel.merge(c);
+		}
 		
-		
-		switch (neighborToClusterMapping.size()) {
-		
-			case 0:
-			/* If you are an island, create a new cluster for you!
-			 * 
-			 *  0 0      0 0
-			 * 0 X 0 => 0 A 0
-			 *  0 0      0 0
-			 */
-				playerCollection.put(newPoint, new Cluster(ptIsCorner, ptIsSide));
-				break;
-				
-				
-			case 1:
-			/* One neighbor, join him!
-			 *  A 0      A 0
-			 * 0 X 0 => 0 A 0
-			 *  0 0      0 0
-			 */
-				for (ImmutableList<Integer> pt: neighborToClusterMapping.keySet()) {
-					Cluster cluster1 = playerCollection.get(pt);
-					cluster1.addCornerAndSide(ptIsCorner, ptIsSide);
-					playerCollection.put(pt, cluster1);
+		if (newClusterLabel.getNumCorner() == 2) {
+			this.forkFound = true;
+		} else if (newClusterLabel.getNumSide() == 3) {
+			this.bridgeFound = true;
+		} else {
+			// Do some update and detect cycle
+			
+			// 1. updatePointClusterMapping(newCluster, List<Cluster>);
+			for (Cluster c: clusterSet) {
+				for (ImmutableList<Integer> pt :playerPointClusterMapping.keySet()) {
+					if (playerPointClusterMapping.get(pt) == c) {
+						playerPointClusterMapping.put(pt, newClusterLabel);
+					}
 				}
-				break;
-				
-			case 2:
-			/* 2 neighbors = { n1 n2 }
-			 * if n1.cluster = n2.cluster || not neighbor(n1, n2)  ==> probably a cycle!
-			 *  A 0      A 0
-			 * 0 X A => 0 A A
-			 *  0 0      0 0
-			 * 
-			 * if n1.cluster = n2.cluster || neighbor(n1, n2)  ==> join them!
-			 *  A A      A A
-			 * 0 X 0 => 0 A 0
-			 *  0 0      0 0
-			 *  
-			 * if n1.cluster != n2.cluster || not neighbor(n1, n2)  ==> update cluster and player collection
-			 *  A 0      C 0
-			 * 0 X B => 0 C C
-			 *  0 0      0 0
-			 *  
-			 * if n1.cluster = n2.cluster || not neighbor(n1, n2)  ==> something goes WRONG!
-			 *  A B      A B
-			 * 0 X 0 => 0 A 0
-			 *  0 0      0 0
-			 */
-				break;
-				
-			case 3:
-				break;
-			case 4:
-				break;
-			case 5:
-			/* 5 neighbors must be in same cluster or something goes wrong
-			 *  A A      A A
-			 * A X 0 => A A 0
-			 *  A A      A A
-			 */
-				break;
-			case 6:
-			/* 6 neighbors must be in same cluster or something goes wrong
-			 *  A A      A A
-			 * A X A => A A A
-			 *  A A      A A
-			 */
-				break;
-			default:
-			// more than 7 neighbor?!
-				throw new Exception();
+			}
+			
+			// 2. updatePointAdjacency(newPoint, List<Points>);
+			playerPointAdjacency.get(newPoint).addAll(neighborsOfNewPoint);
+			for (ImmutableList<Integer> neighborPt: neighborsOfNewPoint) {
+				playerPointAdjacency.get(neighborPt).add(newPoint);
+			}
+			
+			// detect cycle after all updates are complete
+			findCycleFor(playerStr, newPoint);
 		}
 		
 		if (forkFound || bridgeFound || cycleFound) {
@@ -401,8 +360,83 @@ public class HavannahLogic {
 		} else {
 			return null;
 		}
+		
+//		switch (neighborToClusterMapping.size()) {
+//		case 0:
+//		/* If you are an island, create a new cluster for you!
+//		 * 
+//		 *  0 0      0 0
+//		 * 0 X 0 => 0 A 0
+//		 *  0 0      0 0
+//		 */
+//			playerCollection.put(newPoint, new Cluster(ptIsCorner, ptIsSide));
+//			break;
+//			
+//			
+//		case 1:
+//		/* One neighbor, join him!
+//		 *  A 0      A 0
+//		 * 0 X 0 => 0 A 0
+//		 *  0 0      0 0
+//		 */
+//			for (ImmutableList<Integer> pt: neighborToClusterMapping.keySet()) {
+//				Cluster cluster1 = playerCollection.get(pt);
+//				cluster1.addCornerAndSide(ptIsCorner, ptIsSide);
+//				playerCollection.put(pt, cluster1);
+//			}
+//			break;
+//			
+//		case 2:
+//		/* 2 neighbors = { n1 n2 }
+//		 * if n1.cluster = n2.cluster || not neighbor(n1, n2)  ==> probably a cycle!
+//		 *  A 0      A 0
+//		 * 0 X A => 0 A A
+//		 *  0 0      0 0
+//		 * 
+//		 * if n1.cluster = n2.cluster || neighbor(n1, n2)  ==> join them!
+//		 *  A A      A A
+//		 * 0 X 0 => 0 A 0
+//		 *  0 0      0 0
+//		 *  
+//		 * if n1.cluster != n2.cluster || not neighbor(n1, n2)  ==> update cluster and player collection
+//		 *  A 0      C 0
+//		 * 0 X B => 0 C C
+//		 *  0 0      0 0
+//		 *  
+//		 * if n1.cluster = n2.cluster || not neighbor(n1, n2)  ==> something goes WRONG!
+//		 *  A B      A B
+//		 * 0 X 0 => 0 A 0
+//		 *  0 0      0 0
+//		 */
+//			break;
+//			
+//		case 3:
+//			break;
+//		case 4:
+//			break;
+//		case 5:
+//		/* 5 neighbors must be in same cluster or something goes wrong
+//		 *  A A      A A
+//		 * A X 0 => A A 0
+//		 *  A A      A A
+//		 */
+//			break;
+//		case 6:
+//		/* 6 neighbors must be in same cluster or something goes wrong
+//		 *  A A      A A
+//		 * A X A => A A A
+//		 *  A A      A A
+//		 */
+//			break;
+//		default:
+//		// more than 7 neighbor?!
+//			throw new Exception();
 
 	}
+		
+
+		
+
 	
 	<T> List<T> concat(List<T> a, List<T> b) {
 	    return Lists.newArrayList(Iterables.concat(a, b));
@@ -426,7 +460,6 @@ public class HavannahLogic {
 	    Map<String, Object> lastState = verifyMove.getLastState();
 	    List<Integer> playerIds = verifyMove.getPlayerIds();
 	    // is he black or white
-	    check(((List<ImmutableList<Integer>>) lastState.get(W)).contains(lastMove));
 	    check(expectedOperations.equals(lastMove), expectedOperations, lastMove);
 	    // We use SetTurn, so we don't need to check that the correct player did the move.
 	    // However, we do need to check the first move is done by the white player (and then in the
