@@ -190,6 +190,7 @@ public class HavannahLogicTest {
 	public void testAddPointToPlayer2Neighbors() {
 		
 	}
+	
 	@Test
 	public void testAddPointToPlayer3Neighbors() {
 		

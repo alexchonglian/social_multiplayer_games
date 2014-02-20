@@ -24,6 +24,9 @@ public class HavannahLogic {
 	
 	
 	/*
+	 * 
+	 * @author alexchonglian@gmail.com
+	 * 
 	 * Board representation
 	 * 	
 	 *    0 0 0 0
@@ -352,7 +355,9 @@ public class HavannahLogic {
 			}
 			
 			// detect cycle after all updates are complete
-			findCycleFor(playerStr, newPoint);
+			if (findCycleFor(playerStr, newPoint) != null ) {
+				cycleFound = true;
+			}
 		}
 		
 		if (forkFound || bridgeFound || cycleFound) {
@@ -360,6 +365,7 @@ public class HavannahLogic {
 		} else {
 			return null;
 		}
+// code below maybe useful later
 		
 //		switch (neighborToClusterMapping.size()) {
 //		case 0:
@@ -460,7 +466,8 @@ public class HavannahLogic {
 	    Map<String, Object> lastState = verifyMove.getLastState();
 	    List<Integer> playerIds = verifyMove.getPlayerIds();
 	    // is he black or white
-	    check(expectedOperations.equals(lastMove), expectedOperations, lastMove);
+	    // check(expectedOperations.equals(lastMove), expectedOperations, lastMove);
+	    
 	    // We use SetTurn, so we don't need to check that the correct player did the move.
 	    // However, we do need to check the first move is done by the white player (and then in the
 	    // first MakeMove we'll send SetTurn which will guarantee the correct player send MakeMove).
