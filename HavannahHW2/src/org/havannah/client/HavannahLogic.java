@@ -75,11 +75,9 @@ public class HavannahLogic {
 	
 	public int boardSize;
 	
-	//won't change it after initialize it
 	public List<ImmutableList<Integer>> points;// [[0 0 0],[-1 0 1],[0 -1 1]]
 	
-	// must be a mutable data structure. keep adding new pieces
-	// keep in client side. only send { B: points->clusters, W: points->clusters }
+	// { W: points->clusters, B: points->clusters } in client
 	public Map<ImmutableList<Integer>, Cluster> blackPointClusterMapping;// {[0 0 0]: c1, [-1 0 1]:c2}
 	public Map<ImmutableList<Integer>, Cluster> whitePointClusterMapping;// {[0 -1 1]:c3}
 	
@@ -96,13 +94,12 @@ public class HavannahLogic {
 	
 	/* 
 	 * verify(VerifyMove) will filter invalid points before calling these functions below
-	 * For them, NO need to check point validity by "points.contains(p)"
+	 * No need to check point validity by "points.contains(p)"
 	 * 1. distance(p, q)
 	 * 2. isNeighbor(p, q)
 	 * 3. getNeighborsOf(p)
 	 * 4. isCorner(p)
 	 * 5. isSide(p)
-	 * 
 	 */
 	public int distance(List<Integer> p, List<Integer> q) {
 		// distance([0 0 0], [1 0 -1]) => 2
@@ -121,8 +118,6 @@ public class HavannahLogic {
 	}
 	
 	public List<ImmutableList<Integer>> getNeighborsOf(List<Integer> p) {
-		//Invalid points will never appear here. They can't pass the first filter
-		
 		// normally => [6 points]
 		// corner => [3 points]
 		// side => [4 points]
@@ -190,7 +185,11 @@ public class HavannahLogic {
 		return points;
 	}
 	
-	public void updatePointClusterMappingAndPointAdjacency () {
+	public void updatePointClusterMapping () {
+		return;
+	}
+	
+	public void updatePointAdjacency () {
 		return;
 	}
 	
@@ -300,19 +299,24 @@ public class HavannahLogic {
 		// see if neighbors are in connected component (connected if has cluster label)
 		List<ImmutableList<Integer>> neighborsOfNewPoint = getNeighborsOf(newPoint);
 		// create map that stores neighbors that has connection (has cluster label)
-		Map<ImmutableList<Integer>, Cluster> connectedNeighbors = new HashMap();
+		Map<ImmutableList<Integer>, Cluster> neighborToClusterMapping = new HashMap();
 		
 		for (ImmutableList<Integer> neighborPt: neighborsOfNewPoint) {
 			Cluster clusterLabel = playerCollection.get(neighborPt);
 			if ( clusterLabel != null ) {
-				connectedNeighbors.put(neighborPt, clusterLabel);
+				neighborToClusterMapping.put(neighborPt, clusterLabel);
 			}
 		}
 		
 		int ptIsCorner = this.isCornerPoint(newPoint)? 1:0;
 		int ptIsSide = this.isSidePoint(newPoint)? 1:0;
 		
-		switch (connectedNeighbors.size()) {
+		updatePointClusterMapping(newCluster, list<old Clusters>);
+		updatePointAdjacency(newPoint, list<old Points>);
+		
+		
+		
+		switch (neighborToClusterMapping.size()) {
 		
 			case 0:
 			/* If you are an island, create a new cluster for you!
@@ -331,7 +335,7 @@ public class HavannahLogic {
 			 * 0 X 0 => 0 A 0
 			 *  0 0      0 0
 			 */
-				for (ImmutableList<Integer> pt: connectedNeighbors.keySet()) {
+				for (ImmutableList<Integer> pt: neighborToClusterMapping.keySet()) {
 					Cluster cluster1 = playerCollection.get(pt);
 					cluster1.addCornerAndSide(ptIsCorner, ptIsSide);
 					playerCollection.put(pt, cluster1);
@@ -436,78 +440,4 @@ public class HavannahLogic {
 }
 
 
-class Cluster {
-	private static int idAccumulator = 0;//make sure unique id
-	private int id; 
-	private int numCorner;
-	private int numSide;
-	
-	public boolean equals(Cluster c) {
-		return this.id == c.id && this.numCorner == c.numCorner && this.numSide == c.numSide;
-	}
-	
-	// Getters and Setters
-	public int getId() {
-		return id;
-	}
 
-	public int getNumCorner() {
-		return numCorner;
-	}
-
-	public int getNumSide() {
-		return numSide;
-	}
-
-	public void addCornerAndSide(int extraNumCorner, int extraNumSide) {
-		this.numCorner += extraNumCorner;
-		this.numSide += extraNumSide;
-	}
-	
-	
-	// Contructors
-	public Cluster() {
-		this(0, 0);
-	}
-	
-	public Cluster (int numCorner, int numSide) {
-		this.id = Cluster.idAccumulator++;
-		this.numCorner = numCorner;
-		this.numSide = numSide;
-	}
-	
-	/*---------------------------------------------------------------------
-	 * Illustration of cluster merge
-	 *---------------------------------------------------------------------
-	 * X is new added point;
-	 * A B are cluster labels of 2 neighbors that are held by player;
-	 * C is newly created cluster label
-	 * 
-	 *  A 0      C 0
-	 * 0 X B => 0 X C
-	 *  0 0      0 0
-	 *  
-	 *---------------------------------------------------------------------
-	 * X is new added point;
-	 * A B C are cluster labels of 3 neighbors that are held by player;
-	 * C is newly created cluster label
-	 * 
-	 *  A 0      D 0
-	 * 0 X B => 0 X D
-	 *  C 0      D 0
-	 *  
-	 *---------------------------------------------------------------------
-	 */
-	public Cluster merge(Cluster c) {// merge 2 cluster labels
-		int totalNumCorner = this.numCorner + c.numCorner;
-		int totalNumSide = this.numSide + c.numSide;
-		return new Cluster(totalNumCorner, totalNumSide);
-	}
-	
-	public Cluster merge(Cluster c1, Cluster c2) {// merge 3 cluster labels
-		int totalNumCorner = this.numCorner + c1.numCorner + c2.numCorner;
-		int totalNumSide = this.numSide + c1.numSide + c2.numSide;
-		return new Cluster(totalNumCorner, totalNumSide);
-	}
-	
-}
