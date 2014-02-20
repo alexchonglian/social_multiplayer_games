@@ -303,9 +303,9 @@ public class HavannahLogic {
 		Map<ImmutableList<Integer>, Cluster> connectedNeighbors = new HashMap();
 		
 		for (ImmutableList<Integer> neighborPt: neighborsOfNewPoint) {
-			Cluster label = playerCollection.get(neighborPt);
-			if ( label != null ) {
-				connectedNeighbors.put(neighborPt, label);
+			Cluster clusterLabel = playerCollection.get(neighborPt);
+			if ( clusterLabel != null ) {
+				connectedNeighbors.put(neighborPt, clusterLabel);
 			}
 		}
 		
