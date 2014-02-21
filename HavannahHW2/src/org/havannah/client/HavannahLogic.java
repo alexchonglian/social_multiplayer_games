@@ -385,36 +385,48 @@ public class HavannahLogic {
 	    }
 	}
 	
+//	void checkMoveIsLegal(VerifyMove verifyMove) {
+//	    // Checking the operations are as expected.
+//	    List<Operation> expectedOperations = getExpectedOperations(verifyMove);
+//	    List<Operation> lastMove = verifyMove.getLastMove();
+//	    check(expectedOperations.equals(lastMove), expectedOperations, lastMove);
+//	    // We use SetTurn, so we don't need to check that the correct player did the move.
+//	    // However, we do need to check the first move is done by the white player (and then in the
+//	    // first MakeMove we'll send SetTurn which will guarantee the correct player send MakeMove).
+//	    if (verifyMove.getLastState().isEmpty()) {
+//	      check(verifyMove.getLastMovePlayerId() == verifyMove.getPlayerIds().get(0));
+//	    }
+//	}
+	
 	void checkMoveIsLegal(VerifyMove verifyMove) {
 	    // Checking the operations are as expected.
 		List<Operation> lastMove = verifyMove.getLastMove();
 	    Map<String, Object> lastState = verifyMove.getLastState();
 	    List<Integer> playerIds = verifyMove.getPlayerIds();
 	    
-	    // check the new point is valid (in the HavannahLogic.points collection)
-	    ImmutableList<Integer> newPoint
-	    	= (ImmutableList<Integer>) ((Set) lastMove.get(1)).getValue();
-	    
-	    check(this.points.contains(newPoint));
-	    
-	    int numWhitePieces = ((List<ImmutableList<Integer>>) lastState.get(W)).size();
-	    int numBlackPieces = ((List<ImmutableList<Integer>>) lastState.get(B)).size();
-	    
-	    if (numWhitePieces - numBlackPieces == 0) {// then it is white's turn
-	    	check(false);
-	    }else if (numWhitePieces - numWhitePieces == 1) {//then its black's turn
-	    	check(false);
-	    }
-	    
-	    System.out.println(lastMove.get(1));
 	    // We use SetTurn, so we don't need to check that the correct player did the move.
 	    // However, we do need to check the first move is done by the white player (and then in the
 	    // first MakeMove we'll send SetTurn which will guarantee the correct player send MakeMove).
 	    if (verifyMove.getLastState().isEmpty()) {
-	      check(verifyMove.getLastMovePlayerId() == verifyMove.getPlayerIds().get(0));
+	    	check(verifyMove.getLastMovePlayerId() == verifyMove.getPlayerIds().get(0));
+	    } else {
+	    	// check the new point is valid (in the HavannahLogic.points collection)
+		    ImmutableList<Integer> newPoint
+	    	= (ImmutableList<Integer>) ((Set) lastMove.get(1)).getValue();
+		    
+		    check(this.points.contains(newPoint));
+		    
+		    int numWhitePieces = ((List<ImmutableList<Integer>>) lastState.get(W)).size();
+		    int numBlackPieces = ((List<ImmutableList<Integer>>) lastState.get(B)).size();
+		    
+		    if (numWhitePieces - numBlackPieces == 0) {// then it is white's turn
+		    	check(false);
+		    }else if (numWhitePieces - numWhitePieces == 1) {//then its black's turn
+		    	check(false);
+		    }
 	    }
 	}
-	
+	  
 	private void check(boolean val, Object... debugArguments) {
 		if (!val) {
 			throw new RuntimeException("We have a hacker! debugArguments="+ Arrays.toString(debugArguments));
