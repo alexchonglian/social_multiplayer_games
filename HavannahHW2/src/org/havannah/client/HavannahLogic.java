@@ -22,7 +22,6 @@ import com.google.common.collect.Lists;
 
 public class HavannahLogic {
 	
-	
 	/*
 	 * 
 	 * @author alexchonglian@gmail.com
@@ -59,7 +58,7 @@ public class HavannahLogic {
 	 * 
 	 * 
 	 * def  neighbour (p,q)
-	 * = { p,q in points2 | distance(p,q) = 1}
+	 * = { p,q in points2 | distance(p,q) = 2}
 	 * 
 	 * 
 	 * def  neighbours_of (p in points)
@@ -79,7 +78,6 @@ public class HavannahLogic {
 	 * 
 	 * 
 	 */
-	
 	
 	public int boardSize;
 	
@@ -365,79 +363,6 @@ public class HavannahLogic {
 		} else {
 			return null;
 		}
-// code below maybe useful later
-		
-//		switch (neighborToClusterMapping.size()) {
-//		case 0:
-//		/* If you are an island, create a new cluster for you!
-//		 * 
-//		 *  0 0      0 0
-//		 * 0 X 0 => 0 A 0
-//		 *  0 0      0 0
-//		 */
-//			playerCollection.put(newPoint, new Cluster(ptIsCorner, ptIsSide));
-//			break;
-//			
-//			
-//		case 1:
-//		/* One neighbor, join him!
-//		 *  A 0      A 0
-//		 * 0 X 0 => 0 A 0
-//		 *  0 0      0 0
-//		 */
-//			for (ImmutableList<Integer> pt: neighborToClusterMapping.keySet()) {
-//				Cluster cluster1 = playerCollection.get(pt);
-//				cluster1.addCornerAndSide(ptIsCorner, ptIsSide);
-//				playerCollection.put(pt, cluster1);
-//			}
-//			break;
-//			
-//		case 2:
-//		/* 2 neighbors = { n1 n2 }
-//		 * if n1.cluster = n2.cluster || not neighbor(n1, n2)  ==> probably a cycle!
-//		 *  A 0      A 0
-//		 * 0 X A => 0 A A
-//		 *  0 0      0 0
-//		 * 
-//		 * if n1.cluster = n2.cluster || neighbor(n1, n2)  ==> join them!
-//		 *  A A      A A
-//		 * 0 X 0 => 0 A 0
-//		 *  0 0      0 0
-//		 *  
-//		 * if n1.cluster != n2.cluster || not neighbor(n1, n2)  ==> update cluster and player collection
-//		 *  A 0      C 0
-//		 * 0 X B => 0 C C
-//		 *  0 0      0 0
-//		 *  
-//		 * if n1.cluster = n2.cluster || not neighbor(n1, n2)  ==> something goes WRONG!
-//		 *  A B      A B
-//		 * 0 X 0 => 0 A 0
-//		 *  0 0      0 0
-//		 */
-//			break;
-//			
-//		case 3:
-//			break;
-//		case 4:
-//			break;
-//		case 5:
-//		/* 5 neighbors must be in same cluster or something goes wrong
-//		 *  A A      A A
-//		 * A X 0 => A A 0
-//		 *  A A      A A
-//		 */
-//			break;
-//		case 6:
-//		/* 6 neighbors must be in same cluster or something goes wrong
-//		 *  A A      A A
-//		 * A X A => A A A
-//		 *  A A      A A
-//		 */
-//			break;
-//		default:
-//		// more than 7 neighbor?!
-//			throw new Exception();
-
 	}
 		
 
@@ -465,9 +390,23 @@ public class HavannahLogic {
 		List<Operation> lastMove = verifyMove.getLastMove();
 	    Map<String, Object> lastState = verifyMove.getLastState();
 	    List<Integer> playerIds = verifyMove.getPlayerIds();
-	    // is he black or white
-	    // check(expectedOperations.equals(lastMove), expectedOperations, lastMove);
 	    
+	    // check the new point is valid (in the HavannahLogic.points collection)
+	    ImmutableList<Integer> newPoint
+	    	= (ImmutableList<Integer>) ((Set) lastMove.get(1)).getValue();
+	    
+	    check(this.points.contains(newPoint));
+	    
+	    int numWhitePieces = ((List<ImmutableList<Integer>>) lastState.get(W)).size();
+	    int numBlackPieces = ((List<ImmutableList<Integer>>) lastState.get(B)).size();
+	    
+	    if (numWhitePieces - numBlackPieces == 0) {// then it is white's turn
+	    	check(false);
+	    }else if (numWhitePieces - numWhitePieces == 1) {//then its black's turn
+	    	check(false);
+	    }
+	    
+	    System.out.println(lastMove.get(1));
 	    // We use SetTurn, so we don't need to check that the correct player did the move.
 	    // However, we do need to check the first move is done by the white player (and then in the
 	    // first MakeMove we'll send SetTurn which will guarantee the correct player send MakeMove).
@@ -482,6 +421,7 @@ public class HavannahLogic {
 		}
 	}
 	
+
 	List<Operation> getMoveInitial(List<Integer> playerIds) {
 	    int whitePlayerId = playerIds.get(0);
 	    int blackPlayerId = playerIds.get(1);
