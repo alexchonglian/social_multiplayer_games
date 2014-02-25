@@ -318,7 +318,7 @@ public class HavannahLogicTest {
 	/*
 	 * Part Four - HavannahLogic.detect()
 	 * 
-	 * detect fork, bridge, cycle
+	 * the way I detect fork, bridge, cycle is to start from a new point
 	 */
 	@Test
 	public void testFork() {
@@ -330,9 +330,13 @@ public class HavannahLogicTest {
 		  				ImmutableList.<Integer>of(2, -4, 2),
 		  				ImmutableList.<Integer>of(1, -3, 2),
 		  				ImmutableList.<Integer>of(0, -3, 3),
+		  				
 		  				ImmutableList.<Integer>of(-1, -3, 4)
 		  				);
-		assertTrue(havannahLogic.isWinner(fork));
+		ImmutableList<Integer> theMissingPiece = ImmutableList.<Integer>of(-1, -3, 4);
+		//addPointToStateOf(B/W, newPiece)
+		assertTrue(havannahLogic.addPointToStateOf(
+				ImmutableList.copyOf(fork), ImmutableList.copyOf(theMissingPiece)));
 	}
 	
 	@Test
@@ -344,9 +348,12 @@ public class HavannahLogicTest {
 		  				ImmutableList.<Integer>of(2, -4, 2),
 		  				ImmutableList.<Integer>of(1, -3, 2),
 		  				ImmutableList.<Integer>of(0, -3, 3),
+		  				
 		  				ImmutableList.<Integer>of(0, -4, 4)
 		  				);
-		assertTrue(havannahLogic.isWinner(bridge));
+		ImmutableList<Integer> theMissingPiece = ImmutableList.<Integer>of(0, -4, 4);
+		assertTrue(havannahLogic.addPointToStateOf(
+				ImmutableList.copyOf(bridge), ImmutableList.copyOf(theMissingPiece)));
 	}
 	
 	@Test
@@ -358,10 +365,13 @@ public class HavannahLogicTest {
 		  				ImmutableList.<Integer>of(0, -1, 1),
 		  				ImmutableList.<Integer>of(-1, 0, 1),
 		  				ImmutableList.<Integer>of(-1, 1, 0),
-		  				ImmutableList.<Integer>of(0, 1, -1),
-		  				ImmutableList.<Integer>of(0, 0, 0)
+		  				ImmutableList.<Integer>of(0, 0, 0),
+		  				
+		  				ImmutableList.<Integer>of(0, 1, -1)
 		  				);
-		assertTrue(havannahLogic.isWinner(cycle));
+		ImmutableList<Integer> theMissingPiece = ImmutableList.<Integer>of(0, 1, -1);
+		assertTrue(havannahLogic.addPointToStateOf(
+				ImmutableList.copyOf(cycle), ImmutableList.copyOf(theMissingPiece)));
 	}
 	
 	@Test
@@ -373,9 +383,13 @@ public class HavannahLogicTest {
 		  				ImmutableList.<Integer>of(3, -4, 1),
 		  				ImmutableList.<Integer>of(2, -4, 2),
 		  				ImmutableList.<Integer>of(1, -3, 2),
-		  				ImmutableList.<Integer>of(0, -3, 3)
+		  				ImmutableList.<Integer>of(0, -3, 3),
+		  				
+		  				ImmutableList.<Integer>of(0, 4, -4)
 		  				);
-		assertTrue(!havannahLogic.isWinner(almostFork));
+		ImmutableList<Integer> irrelevantMove = ImmutableList.<Integer>of(0, 4, -4);
+		assertTrue(!havannahLogic.addPointToStateOf(
+				ImmutableList.copyOf(almostFork), ImmutableList.copyOf(irrelevantMove)));
 	}
 	
 	@Test
@@ -387,9 +401,12 @@ public class HavannahLogicTest {
 		  				ImmutableList.<Integer>of(2, -4, 2),
 		  				ImmutableList.<Integer>of(1, -3, 2),
 		  				ImmutableList.<Integer>of(0, -3, 3),
+		  				
 		  				ImmutableList.<Integer>of(0, -4, 4)
 		  				);
-		assertTrue(!havannahLogic.isWinner(almostBridge));
+		ImmutableList<Integer> irrelevantMove = ImmutableList.<Integer>of(0, 4, -4);
+		assertTrue(!havannahLogic.addPointToStateOf(
+				ImmutableList.copyOf(almostBridge), ImmutableList.copyOf(irrelevantMove)));
 	}
 	
 	@Test
@@ -401,9 +418,13 @@ public class HavannahLogicTest {
 		  				ImmutableList.<Integer>of(0, -1, 1),
 		  				ImmutableList.<Integer>of(-1, 0, 1),
 		  				ImmutableList.<Integer>of(-1, 1, 0),
-		  				ImmutableList.<Integer>of(0, 1, -1)
+		  				ImmutableList.<Integer>of(0, 0, 0),
+		  				
+		  				ImmutableList.<Integer>of(0, 4, -4)
 		  				);
-		assertTrue(!havannahLogic.isWinner(almostCycle));
+		ImmutableList<Integer> irrelevantMove = ImmutableList.<Integer>of(0, 4, -4);
+		assertTrue(!havannahLogic.addPointToStateOf(
+				ImmutableList.copyOf(almostCycle), ImmutableList.copyOf(irrelevantMove)));
 	}
 	
 	
