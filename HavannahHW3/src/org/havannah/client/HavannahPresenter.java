@@ -63,15 +63,15 @@ public class HavannahPresenter {
 			return;
 		}
 		
-		Color turnOfColor = null;
+		Color turnColor = null;
 		for (Operation operation : updateUI.getLastMove()) {
 			if (operation instanceof SetTurn) {
-				turnOfColor = Color.values()[playerIds.indexOf(((SetTurn) operation).getPlayerId())];
+				turnColor = Color.values()[playerIds.indexOf(((SetTurn) operation).getPlayerId())];
 			}
 		}
 		
 		havannahState = havannahLogic.gameApiStateToHavannahState(updateUI.getState(),
-				turnOfColor, playerIds);
+				turnColor, playerIds);
 
 		//HavannahMessage havannahMessage = getHavannahMessage();
 		
@@ -106,10 +106,6 @@ public class HavannahPresenter {
 		}
 	}
 
-	/**
-	 * Adds/remove the card from the {@link #selectedCards}. The view can only
-	 * call this method if the presenter called {@link View#chooseNextCard}.
-	 */
 	public void pointSelected(ImmutableList<Integer> pt) {
 		check(isMyTurn());
 		choosePoint();
