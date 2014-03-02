@@ -1,0 +1,194 @@
+<html>
+<head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Havannah Board Game</title>
+
+	<link type="text/css" rel="stylesheet" href="Havannah.css">
+
+  <script type="text/javascript" language="javascript" src="havannah_game/havannah_game.nocache.js"></script>
+
+	<script>
+		window.onload = function() {
+
+			var player = 0;
+			var td = document.getElementsByTagName('td');
+			var pieceimage;
+
+			for (index = 0; index < td.length; ++index) {
+
+				td[index].onclick = function() {
+
+					pieceimage = this.getElementsByTagName('img')[0];
+
+					if (player == 0) {
+						pieceimage.setAttribute('src', './assets/redx.gif');
+						player = 1;
+
+					} else {
+						pieceimage.setAttribute('src', './assets/bluex.gif');
+						player = 0;
+
+					}
+					
+				};
+			}
+		};
+
+		function clearBoard() {
+
+			var td = document.getElementsByTagName('td');
+
+			for (index = 0; index < td.length; ++index) {
+
+				var pieceimage = td[index].getElementsByTagName('img')[0]
+
+				if (pieceimage) {
+					if (pieceimage.getAttribute('src') == './assets/bluex.gif' 
+						||pieceimage.getAttribute('src') == './assets/redx.gif'  ){
+
+						pieceimage.setAttribute('src', './assets/nox.gif');
+
+					}
+				}
+			}
+		}
+
+	</script>
+
+</head>
+<body bgcolor="#F0F0F0">
+<center>
+</center>
+Havannah Board Game <center>
+<hr>
+<div id="top"></div>
+<br>
+<form>
+<!-- the gif image that the board generated from are modified after jon.kleiser@usit.uio.no-->
+<table border="0" cellpadding="0" cellspacing="0">
+<tbody><tr>
+	<td colspan="7"></td>
+	<td><img src="./assets/top1.gif"></td><td><img src="./assets/top2.gif"></td>
+	<td><img src="./assets/top1.gif"></td><td><img src="./assets/top2.gif"></td>
+	<td><img src="./assets/top1.gif"></td><td><img src="./assets/top2.gif"></td>
+	<td><img src="./assets/top1.gif"></td><td><img src="./assets/top2.gif"></td>
+	<td><img src="./assets/top1.gif"></td><td><img src="./assets/top2.gif"></td>
+	<td><img src="./assets/top0.gif"></td><td><img src="./assets/top0.gif"></td>
+	<td><img src="./assets/top0.gif"></td><td><img src="./assets/top0.gif"></td>
+	<td><img src="./assets/top0.gif"></td><td><img src="./assets/top0.gif"></td>
+	<td><img src="./assets/top0.gif"></td><td><img src="./assets/top0.gif"></td>
+
+
+</tr><tr>
+	<td colspan="7"></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif"></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif"></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif"></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif"></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif"></td>
+
+</tr><tr>
+	<td colspan="6"></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif"></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif"></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif"></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif"></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif"></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif"></td>
+
+</tr><tr>
+	<td colspan="5"></td>
+	<td class="point" colspan="2"><img src="./assets/bluex.gif"></td>
+	<td class="point" colspan="2"><img src="./assets/bluex.gif"></td>
+	<td class="point" colspan="2"><img src="./assets/bluex.gif"></td>
+	<td class="point" colspan="2"><img src="./assets/bluex.gif"></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif"></td>
+	<td class="point" colspan="2"><img src="./assets/redx.gif"></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif"></td>
+
+</tr><tr>
+	<td colspan="4"></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/bluex.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/redx.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/redx.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/bluex.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+
+</tr><tr>
+	<td colspan="3"></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/redx.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+</tr><tr>
+	<td colspan="3"></td>
+	<td><img src="./assets/lefte.gif"></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/bluex.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+
+</tr><tr>
+	<td colspan="4"></td>
+	<td><img src="./assets/lefte.gif"></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/redx.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+
+</tr><tr>
+	<td colspan="5"></td>
+	<td><img src="./assets/lefte.gif"></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/redx.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+
+</tr><tr>
+	<td colspan="6"></td>
+	<td><img src="./assets/lefte.gif"></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/redx.gif" ></td>
+	<td class="point" colspan="2"><img src="./assets/nox.gif" ></td>
+
+</tr><tr>
+	<td colspan="7"></td>
+	<td class="point" colspan="2"><img src="./assets/bot.gif"></td>
+	<td class="point" colspan="2"><img src="./assets/bot.gif"></td>
+	<td class="point" colspan="2"><img src="./assets/bot.gif"></td>
+	<td class="point" colspan="2"><img src="./assets/bot.gif"></td>
+	<td class="point" colspan="2"><img src="./assets/bot.gif"></td>
+
+</tr></tbody></table>
+<br>
+</form>
+</center>
+
+
+<center>
+<div id="bottom"><input type="button" id="clear" value="clear" onclick="clearBoard()"></div>
+</center>
+
+<hr>
+
+
+</body></html>
+
