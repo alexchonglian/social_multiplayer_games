@@ -8,11 +8,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.gwt.user.client.ui.Composite;
 
 public class HavannahGraphics extends Composite implements HavannahPresenter.View {
+	private boolean enableClicks = false;
+	  private HavannahPresenter presenter;
 
 	@Override
 	public void setPresenter(HavannahPresenter havannahPresenter) {
-		// TODO Auto-generated method stub
-		
+		this.presenter = havannahPresenter;
 	}
 
 	@Override
