@@ -39,13 +39,12 @@ public class HavannahEntryPoint implements EntryPoint {
 
 			@Override
 			public void sendVerifyMove(VerifyMove verifyMove) {
-				// TODO
+				//TODO
 				container.sendVerifyMoveDone(null);
 			}
 
 			@Override
 			public void sendUpdateUI(UpdateUI updateUI) {
-				// TODO Auto-generated method stub
 				havannahPresenter.updateUI(updateUI);
 			}
 			
