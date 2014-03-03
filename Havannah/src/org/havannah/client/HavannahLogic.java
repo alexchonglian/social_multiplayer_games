@@ -83,17 +83,12 @@ public class HavannahLogic {
 	
 	public List<ImmutableList<Integer>> points;// [[0 0 0],[-1 0 1],[0 -1 1]]
 	
-	// { W: points->clusters, B: points->clusters } in client
-	public Map<ImmutableList<Integer>, Cluster> blackPointClusterMapping;// {[0 0 0]: c1, [-1 0 1]:c2}
-	public Map<ImmutableList<Integer>, Cluster> whitePointClusterMapping;// {[0 -1 1]:c3}
-	
-	public Map<ImmutableList<Integer>, List<ImmutableList<Integer>>> blackPointAdjacency;
-	public Map<ImmutableList<Integer>, List<ImmutableList<Integer>>> whitePointAdjacency;
-	
 	public Map<String, List<ImmutableList<Integer>>> boardState;//{W:[p1, p2], B:[p3, p4]}
 	
-	private static final String W = "W"; // White hand
-	private static final String B = "B"; // Black hand
+	private static final String W = "W"; // in the UI White => Red, Black => Blue
+	private static final String B = "B"; 
+	private static final String addW = "addW";
+	private static final String addB = "addB";
 	
 	private boolean forkFound = false;
 	private boolean bridgeFound = false;
@@ -208,80 +203,6 @@ public class HavannahLogic {
 		return points;
 	}
 	
-	public String addPointToPlayer(ImmutableList<Integer> newPoint, String playerStr)
-			throws Exception {
-		// update black and white players' pieces collection after player make move
-		// only called after making sure that the position is valid and not occupied by both
-		Map<ImmutableList<Integer>, Cluster> playerPointClusterMapping;
-		Map<ImmutableList<Integer>, List<ImmutableList<Integer>>> playerPointAdjacency;
-		
-		if (playerStr == W) {
-			playerPointClusterMapping = this.whitePointClusterMapping;
-			playerPointAdjacency = this.whitePointAdjacency;
-		} else if (playerStr == B) {
-			playerPointClusterMapping = this.blackPointClusterMapping;
-			playerPointAdjacency = this.blackPointAdjacency;
-		} else {
-			throw new IllegalArgumentException("playerStr must be W or B");
-		}
-		
-		// see if neighbors are in connected component (connected if has cluster label)
-		List<ImmutableList<Integer>> neighborsOfNewPoint = getNeighborsOf(newPoint);
-		// create map that stores neighbors that has connection (has cluster label)
-		Map<ImmutableList<Integer>, Cluster> neighborToClusterMapping = new HashMap<ImmutableList<Integer>, Cluster>();
-		
-		for (ImmutableList<Integer> neighborPt: neighborsOfNewPoint) {
-			Cluster clusterLabel = playerPointClusterMapping.get(neighborPt);
-			if ( clusterLabel != null ) {
-				neighborToClusterMapping.put(neighborPt, clusterLabel);
-			}
-		}
-		
-		int ptIsCorner = this.isCornerPoint(newPoint)? 1:0;
-		int ptIsSide = this.isSidePoint(newPoint)? 1:0;
-		
-		Cluster newClusterLabel = new Cluster(ptIsCorner, ptIsSide);
-		
-		HashSet<Cluster> clusterSet = new HashSet<Cluster>(neighborToClusterMapping.values());
-		
-		for (Cluster c: clusterSet) {
-			newClusterLabel = newClusterLabel.merge(c);
-		}
-		
-		if (newClusterLabel.getNumCorner() == 2) {
-			this.forkFound = true;
-		} else if (newClusterLabel.getNumSide() == 3) {
-			this.bridgeFound = true;
-		} else {
-			// Do some update and detect cycle
-			
-			// 1. updatePointClusterMapping(newCluster, List<Cluster>);
-			for (Cluster c: clusterSet) {
-				for (ImmutableList<Integer> pt :playerPointClusterMapping.keySet()) {
-					if (playerPointClusterMapping.get(pt) == c) {
-						playerPointClusterMapping.put(pt, newClusterLabel);
-					}
-				}
-			}
-			
-			// 2. updatePointAdjacency(newPoint, List<Points>);
-			playerPointAdjacency.get(newPoint).addAll(neighborsOfNewPoint);
-			for (ImmutableList<Integer> neighborPt: neighborsOfNewPoint) {
-				playerPointAdjacency.get(neighborPt).add(newPoint);
-			}
-			
-			// detect cycle after all updates are complete
-//			if (findCycleFor(playerStr, newPoint) != null ) {
-//				cycleFound = true;
-//			}
-		}
-		
-		if (forkFound || bridgeFound || cycleFound) {
-			return playerStr;
-		} else {
-			return null;
-		}
-	}
 		
 
 	
@@ -391,43 +312,39 @@ public class HavannahLogic {
 	    }
 	}
 	
-//	void checkMoveIsLegal(VerifyMove verifyMove) {
-//	    // Checking the operations are as expected.
-//	    List<Operation> expectedOperations = getExpectedOperations(verifyMove);
-//	    List<Operation> lastMove = verifyMove.getLastMove();
-//	    check(expectedOperations.equals(lastMove), expectedOperations, lastMove);
-//	    // We use SetTurn, so we don't need to check that the correct player did the move.
-//	    // However, we do need to check the first move is done by the white player (and then in the
-//	    // first MakeMove we'll send SetTurn which will guarantee the correct player send MakeMove).
-//	    if (verifyMove.getLastState().isEmpty()) {
-//	      check(verifyMove.getLastMovePlayerId() == verifyMove.getPlayerIds().get(0));
-//	    }
-//	}
-	
 	void checkMoveIsLegal(VerifyMove verifyMove) {
-	    // the move is legal if (the new point a valid point) and (it is not occupied)
-		List<Operation> lastMove = verifyMove.getLastMove();
-	    Map<String, Object> lastState = verifyMove.getLastState();
-	    List<Integer> playerIds = verifyMove.getPlayerIds();
-	    
+	    // Checking the operations are as expected.
+	    List<Operation> expectedOperations = getExpectedOperations(verifyMove);
+	    List<Operation> lastMove = verifyMove.getLastMove();
+	    check(expectedOperations.equals(lastMove), expectedOperations, lastMove);
 	    // We use SetTurn, so we don't need to check that the correct player did the move.
 	    // However, we do need to check the first move is done by the white player (and then in the
 	    // first MakeMove we'll send SetTurn which will guarantee the correct player send MakeMove).
 	    if (verifyMove.getLastState().isEmpty()) {
-	    	check(verifyMove.getLastMovePlayerId() == verifyMove.getPlayerIds().get(0));
-	    } else {
-	    	// check the new point is valid (in the HavannahLogic.points collection)
-		    ImmutableList<Integer> newPoint
-	    	= (ImmutableList<Integer>) ((Set) lastMove.get(1)).getValue();
-		    
-		    check(this.points.contains(newPoint));
-		    
-		    List<Object> whitePieces = ((List<Object>) lastState.get(W));
-		    List<Object> blackPieces = ((List<Object>) lastState.get(B));
-		    
-		    check(!whitePieces.contains(newPoint) && !blackPieces.contains(newPoint));
+	      check(verifyMove.getLastMovePlayerId() == verifyMove.getPlayerIds().get(0));
 	    }
 	}
+	
+//	void checkMoveIsLegal(VerifyMove verifyMove) {
+//	    // the move is legal if (the new point a valid point) and (it is not occupied)
+//		List<Operation> lastMove = verifyMove.getLastMove();
+//	    Map<String, Object> lastState = verifyMove.getLastState();
+//	    List<Integer> playerIds = verifyMove.getPlayerIds();
+//	    if (verifyMove.getLastState().isEmpty()) {
+//	    	check(verifyMove.getLastMovePlayerId() == verifyMove.getPlayerIds().get(0));
+//	    } else {
+//	    	// check the new point is valid (in the HavannahLogic.points collection)
+//		    ImmutableList<Integer> newPoint
+//	    	= (ImmutableList<Integer>) ((Set) lastMove.get(1)).getValue();
+//		    
+//		    check(this.points.contains(newPoint));
+//		    
+//		    List<Object> whitePieces = ((List<Object>) lastState.get(W));
+//		    List<Object> blackPieces = ((List<Object>) lastState.get(B));
+//		    
+//		    check(!whitePieces.contains(newPoint) && !blackPieces.contains(newPoint));
+//	    }
+//	}
 	  
 	private void check(boolean val, Object... debugArguments) {
 		if (!val) {
@@ -435,6 +352,50 @@ public class HavannahLogic {
 		}
 	}
 	
+	/**
+	* Returns the expected move, which is one of:
+	* getMoveInitial, getMoveDeclareCheater, getMoveCheckIfCheated, getMoveClaim.
+	*/
+	@SuppressWarnings("unchecked")
+	List<Operation> getExpectedOperations(VerifyMove verifyMove) {
+		List<Operation> lastMove = verifyMove.getLastMove();
+		Map<String, Object> lastApiState = verifyMove.getLastState();
+		List<Integer> playerIds = verifyMove.getPlayerIds();
+	    if (lastApiState.isEmpty()) {
+	      return getMoveInitial(playerIds);
+	    }
+	    // else the operation must be addW or addB
+	    int lastMovePlayerId = verifyMove.getLastMovePlayerId();
+	    HavannahState lastState = gameApiStateToHavannahState(lastApiState,
+	        Color.values()[playerIds.indexOf(lastMovePlayerId)], playerIds);
+	    ImmutableList<Integer> newPoint
+    	= (ImmutableList<Integer>) ((Set) lastMove.get(1)).getValue();
+	    
+	    check(this.points.contains(newPoint));
+	    
+	    List<Object> whitePieces = ((List<Object>) lastApiState.get(W));
+	    List<Object> blackPieces = ((List<Object>) lastApiState.get(B));
+	    
+	    check(!whitePieces.contains(newPoint) && !blackPieces.contains(newPoint));
+	    // 3) checking if we had a cheater (then we have Delete(isCheater)).
+//	    if (lastMove.contains(new Set(IS_CHEATER, YES))) {
+//	      return getMoveDeclareCheater(lastState);
+//
+//	    } else if (lastMove.contains(new Delete(IS_CHEATER))) {
+//	      return getMoveCheckIfCheated(lastState);
+//
+//	    } else {
+//	      List<Integer> lastM = lastState.getMiddle();
+//	      Set setM = (Set) lastMove.get(2);
+//	      List<Integer> newM = (List<Integer>) setM.getValue();
+//	      List<Integer> diffM = subtract(newM, lastM);
+//	      Set setClaim = (Set) lastMove.get(3);
+//	      Claim claim =
+//	          checkNotNull(Claim.fromClaimEntryInGameState((List<String>) setClaim.getValue()));
+//	      return getMoveClaim(lastState, claim.getCardRank(), diffM);
+//	    }
+	    return null;
+	  }
 
 	List<Operation> getMoveInitial(List<Integer> playerIds) {
 	    int whitePlayerId = playerIds.get(0);

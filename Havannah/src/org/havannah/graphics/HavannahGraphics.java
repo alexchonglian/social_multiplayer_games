@@ -5,15 +5,28 @@ import java.util.List;
 import org.havannah.client.HavannahPresenter;
 
 import com.google.common.collect.ImmutableList;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Widget;
 
-public class HavannahGraphics extends Composite implements HavannahPresenter.View {
-	private boolean enableClicks = false;
-	  private HavannahPresenter presenter;
+public class HavannahGraphics extends Composite implements HavannahPresenter.View{
+
+	private static HavannahGraphicsUiBinder uiBinder = GWT
+			.create(HavannahGraphicsUiBinder.class);
+
+	interface HavannahGraphicsUiBinder extends
+			UiBinder<Widget, HavannahGraphics> {
+	}
+
+	public HavannahGraphics() {
+		initWidget(uiBinder.createAndBindUi(this));
+	}
 
 	@Override
 	public void setPresenter(HavannahPresenter havannahPresenter) {
-		this.presenter = havannahPresenter;
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
