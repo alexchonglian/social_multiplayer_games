@@ -13,18 +13,30 @@ import org.havannah.client.HavannahPresenter;
 import org.havannah.client.HavannahLogic;
 
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.DragOverEvent;
+import com.google.gwt.event.dom.client.DragOverHandler;
+import com.google.gwt.event.dom.client.DragStartEvent;
+import com.google.gwt.event.dom.client.DragStartHandler;
+import com.google.gwt.event.dom.client.DropEvent;
+import com.google.gwt.event.dom.client.DropHandler;
+import com.google.gwt.event.dom.client.MouseUpEvent;
+import com.google.gwt.event.dom.client.MouseUpHandler;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 public class HavannahEntryPoint implements EntryPoint {
 	IteratingPlayerContainer container;
@@ -32,6 +44,26 @@ public class HavannahEntryPoint implements EntryPoint {
 	int playerId = 0;
 	boolean canMakeMove = true;
 
+    private boolean redDragged = false;
+    private boolean blueDragged = false;
+    
+    private boolean isRedDragged() {
+    	return this.redDragged;
+    }
+    
+    private boolean isBlueDragged() {
+    	return this.blueDragged;
+    }
+    
+    private void setRedDragged(boolean redDragged) {
+    	this.redDragged = redDragged;
+    }
+    
+    private void setBlueDragged() {
+    	this.blueDragged = blueDragged;
+    }
+	
+	
 	@Override
 	public void onModuleLoad() {
 		
@@ -134,7 +166,9 @@ public class HavannahEntryPoint implements EntryPoint {
 	    
 	    for (String pieceStr: pieces) {
 	    	final String piece = pieceStr;
+	    	
 			RootPanel.get(pieceStr).sinkEvents(Event.ONCLICK);
+			
 			RootPanel.get(pieceStr).addHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {
 					
@@ -147,11 +181,58 @@ public class HavannahEntryPoint implements EntryPoint {
 						RootPanel.get(piece).add(new Image("assets/bluex.gif"));
 						canMakeMove = false;
 					}
-				}}, ClickEvent.getType());
+			}}, ClickEvent.getType());
+			
+			
+			RootPanel.get(pieceStr).sinkEvents(Event.GESTUREEVENTS);
+			
+			RootPanel.get(piece).addDomHandler(new DragOverHandler() {
+				public void onDragOver(DragOverEvent event) {
+					
+				}
+			}, DragOverEvent.getType());
+			
+		    RootPanel.get(piece).addDomHandler(new DropHandler() {
+				public void onDrop(DropEvent event) {
+					String colorOfPiece = event.getData("text");
+					RootPanel.get(piece).clear(true);
+					if (colorOfPiece.equals("red")) {
+						RootPanel.get(piece).add(new Image("assets/redx.gif"));
+					}
+					if (colorOfPiece.equals("blue")) {
+						RootPanel.get(piece).add(new Image("assets/bluex.gif"));
+					}
+					canMakeMove = false;
+				}
+		    }, DropEvent.getType());
+			
 	    }
 	    
+//	    Element a1 = DOM.getElementById("a1");
+//	    a1.addDropHandler(new DropHandler() {
+//			public void onDrop(DropEvent event) {
+//				// TODO Auto-generated method stub
+//			}
+//	    });
 
-		
+	    
+	    
+	    RootPanel.get("redPiece").getElement().setDraggable(Element.DRAGGABLE_TRUE);
+	    final Widget redPiece = RootPanel.get("redPiece");
+	    redPiece.addDomHandler(new DragStartHandler() {
+	    	public void onDragStart(DragStartEvent event) {
+	    		event.setData("text", "red");
+	    	}
+	    }, DragStartEvent.getType());
+	    
+	    
+	    RootPanel.get("bluePiece").getElement().setDraggable(Element.DRAGGABLE_TRUE);
+	    final Widget bluePiece = RootPanel.get("bluePiece");
+	    bluePiece.addDomHandler(new DragStartHandler() {
+	    	public void onDragStart(DragStartEvent event) {
+	    		event.setData("text", "blue");
+	    	}
+	    }, DragStartEvent.getType());
 		
 		
 		Grid g = new Grid(5, 5);
