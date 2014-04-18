@@ -24,13 +24,9 @@ import com.google.gwt.event.dom.client.DragStartEvent;
 import com.google.gwt.event.dom.client.DragStartHandler;
 import com.google.gwt.event.dom.client.DropEvent;
 import com.google.gwt.event.dom.client.DropHandler;
-import com.google.gwt.event.dom.client.MouseUpEvent;
-import com.google.gwt.event.dom.client.MouseUpHandler;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
@@ -44,26 +40,6 @@ public class HavannahEntryPoint implements EntryPoint {
 	int playerId = 0;
 	boolean canMakeMove = true;
 
-    private boolean redDragged = false;
-    private boolean blueDragged = false;
-    
-    private boolean isRedDragged() {
-    	return this.redDragged;
-    }
-    
-    private boolean isBlueDragged() {
-    	return this.blueDragged;
-    }
-    
-    private void setRedDragged(boolean redDragged) {
-    	this.redDragged = redDragged;
-    }
-    
-    private void setBlueDragged() {
-    	this.blueDragged = blueDragged;
-    }
-	
-	
 	@Override
 	public void onModuleLoad() {
 		
