@@ -1,23 +1,34 @@
 <!doctype html>
 <html>
-<head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=425">
 <title>Havannah Board Game</title>
   <style type="text/css">
-	  body {
-		  margin-left: 80px;
-		  margin-right: 60px
-		  }
+	body {
+		margin-left: 0px;
+		margin-right: 0px
+	}
 		
-		table tr td img{
-		  margin: 0;
-		  padding: 0;
-		  border: 0;
-		  vertical-align: bottom;
-		}
+	form {
+		margin: 0;
+		padding: 0;
+	}
+
+	table tr td img{
+		margin: 0;
+		padding: 0;
+		border: 0;
+		vertical-align: bottom;
+	}
 		
-		td {
-		  white-space: nowrap;
-		}
+	td {
+		white-space: nowrap;
+	}
+		
+	#newpiece {
+
+	}
   </style>
 
   <script type="text/javascript" language="javascript" src="havannah_game/havannah_game.nocache.js"></script>
@@ -205,10 +216,16 @@ Havannah Board Game <center>
 </center>
 
 
-
 <br />
 <hr />
 <div id="prompt"></div>
+
+
+<div align="center" class="newpiece">
+	<span id="redPiece"><img src="./assets/redx.gif" ></span>
+	<span id="bluePiece"><img src="./assets/bluex.gif" ></span>
+	<span><h1>Try Drag it to the board!</h1></span>
+</div><br>
 
 <center>
 <div id="bottom">
