@@ -35,13 +35,22 @@
 
 
 
-<!-- 
+
 	<script>
 		window.onload = function() {
 
 			var player = 0;
 			var td = document.getElementsByTagName('td');
 			var pieceimage;
+
+			var redcells = {};
+			var bluecells = {};
+
+
+			var youmove = "Please make a move, red player ...";
+			var aimove = "AI is searching for the next move ..."
+
+
 
 			for (index = 0; index < td.length; ++index) {
 
@@ -83,7 +92,7 @@
 		}
 
 	</script>
-	-->
+	
 	
 	
 
@@ -224,7 +233,8 @@ Havannah Board Game <center>
 <div align="center" class="newpiece">
 	<span id="redPiece"><img src="./assets/redx.gif" ></span>
 	<span id="bluePiece"><img src="./assets/bluex.gif" ></span>
-	<span><h1>Try Drag it to the board!</h1></span>
+	<span><h1>You're Red Player, AI is Blue Player</h1></span>
+	<span id="updatemessage"><h1>You move</h1></span>
 </div><br>
 
 <center>
